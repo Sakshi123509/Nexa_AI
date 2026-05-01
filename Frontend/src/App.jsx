@@ -7,6 +7,9 @@ import { useContext } from "react";
 import Customize from "./pages/customize.jsx";
 import { UserDataContext } from "./contextAPI/Usercontext.jsx";
 
+import './index.css';
+import './App.css';
+
 //userData h to customize pr aiimg aur name dalo nhi h do signin kro
 //ai img bhi h to home page pr aa skte ho
 const App = () => {

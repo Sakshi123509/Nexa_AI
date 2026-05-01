@@ -1,0 +1,100 @@
+/* Glitch-In Effect for Headings */
+@keyframes techDeploy {
+  0% { opacity: 0; transform: scale(0.95) translateY(10px); filter: blur(10px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+}
+
+/* Breathing Accent Border */
+@keyframes neuralPulse {
+  0% { border-color: rgba(170, 59, 255, 0.3); box-shadow: 0 0 5px rgba(170, 59, 255, 0.1); }
+  50% { border-color: var(--accent); box-shadow: 0 0 20px rgba(170, 59, 255, 0.4); }
+  100% { border-color: rgba(170, 59, 255, 0.3); box-shadow: 0 0 5px rgba(170, 59, 255, 0.1); }
+}
+
+h1 {
+  animation: techDeploy 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.counter {
+  animation: neuralPulse 3s infinite ease-in-out;
+}
+
+#root {
+  /* Give the main container a "Glass" feel to see the background */
+  background: rgba(22, 23, 29, 0.7);
+  backdrop-filter: blur(8px);
+}
+.nx-auth-root {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: var(--nx-bg);
+}
+
+.nx-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.nx-card {
+  position: relative;
+  z-index: 10;
+  background: var(--nx-glass);
+  border: 1px solid var(--nx-border);
+  border-radius: 4px; /* Industrial sharp edges */
+  width: 420px;
+  padding: 40px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  animation: fadeSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nx-card__title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 24px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  background: linear-gradient(to bottom, #fff, var(--nx-cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 8px;
+}
+
+.nx-field__input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--nx-border);
+  padding: 12px;
+  color: white;
+  font-family: 'Rajdhani', sans-serif;
+  transition: 0.3s;
+  margin-top: 10px;
+}
+
+.nx-field__input:focus {
+  border-color: var(--nx-cyan);
+  outline: none;
+  box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
+}
+
+.nx-btn-primary {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(90deg, var(--nx-blue), var(--nx-cyan));
+  border: none;
+  color: white;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  cursor: pointer;
+  margin-top: 20px;
+  clip-path: polygon(5% 0, 100% 0, 100% 70%, 95% 100%, 0 100%, 0 30%);
+}
+
+.nx-btn-primary:hover {
+  filter: brightness(1.2);
+  transform: translateY(-2px);
+}
