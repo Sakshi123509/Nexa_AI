@@ -1,114 +1,157 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
+/* @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap"); */
+/* @import "tailwindcss"; */
+/* ─── GOOGLE FONTS ─── */
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap");
 
+/* ─── ROOT VARIABLES (ONLY ONE ROOT!) ─── */
 :root {
-  --nx-bg: #0a0b0f;
-  --nx-cyan: #00f2ff;
-  --nx-blue: #0066ff;
-  --nx-lime: #39ff14;
-  --nx-silver: #e0e6ed;
-  --nx-glass: rgba(10, 11, 15, 0.95);
-  --nx-border: rgba(0, 242, 255, 0.2);
-  --nx-bg-input: rgba(10, 11, 15, 0.6);
+  /* COLORS */
+  --bg: #060d1a;
+  --bg-soft: rgba(4, 18, 48, 0.85);
+
+  --text-primary: #e0f4f8;
+  --text-secondary: #a0d4e0;
+  --text-muted: #4a7a8a;
+
+  --accent: #00cfff;
+  --accent-dim: #00b4cc;
+
+  --border: rgba(0, 229, 255, 0.2);
+
+  /* FONTS */
+  --font-main: "Rajdhani", sans-serif;
+  --font-display: "Orbitron", sans-serif;
+  --font-mono: "Share Tech Mono", monospace;
+
+  /* SPACING */
+  --radius: 8px;
+  --transition: 0.3s ease;
 }
 
-/* 1. Reset & Global Styles */
+/* ─── RESET ─── */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+/* ─── BODY ─── */
 body {
-  background-color: var(--nx-bg);
-  color: var(--nx-silver);
-  font-family: 'Rajdhani', sans-serif;
+  background: var(--bg);
+  color: var(--text-secondary);
+  font-family: var(--font-main);
+  min-height: 100vh;
 }
 
-/* 2. Unified Input Styling - Strictly No White Background */
-.nx-input {
-  width: 100%;
-  background: var(--nx-bg-input) !important; /* Force dark background */
-  border: 1px solid var(--nx-border);
-  padding: 12px;
-  color: #fff;
-  font-family: 'Rajdhani', sans-serif;
-  outline: none;
-  transition: all 0.3s ease;
-  box-sizing: border-box;
-  -webkit-appearance: none; /* Removes iOS/Safari white style */
-  appearance: none;
-}
-
-.nx-input:focus {
-  background: rgba(0, 242, 255, 0.05) !important;
-  border-color: var(--nx-cyan);
-  box-shadow: 0 0 15px rgba(0, 242, 255, 0.15);
-}
-
-/* 3. Button Styling */
-.nx-btn {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 14px;
-  background: rgba(0, 207, 255, 0.08);
-  border: 1px solid rgba(0, 180, 255, 0.3);
-  color: rgba(0, 207, 255, 0.8);
-  font-size: 12px;
+/* ─── HEADINGS ─── */
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  color: var(--text-primary);
   letter-spacing: 2px;
-  font-family: 'Orbitron', sans-serif;
-  font-weight: 700;
+}
+
+/* ─── TEXT ─── */
+p {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* ─── INPUT ─── */
+input,
+textarea {
+  width: 100%;
+  padding: 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: rgba(0, 25, 60, 0.6);
+  color: white;
+  font-family: var(--font-main);
+  outline: none;
+}
+
+input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 10px rgba(0, 207, 255, 0.3);
+}
+
+/* ─── BUTTON ─── */
+button {
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--accent);
+  background: rgba(0, 207, 255, 0.1);
+  color: var(--accent);
   cursor: pointer;
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-  -webkit-appearance: none;
+  transition: var(--transition);
 }
 
-.nx-btn:hover:not(:disabled) {
-  background: rgba(0, 207, 255, 0.15);
-  border-color: var(--nx-cyan);
-  color: #7de8ff;
-  box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
+button:hover {
+  background: rgba(0, 207, 255, 0.2);
 }
 
-/* 4. Text & Utility Styles */
-.nx-orbitron { font-family: 'Orbitron', sans-serif; }
-.nx-mono { font-family: 'JetBrains Mono', monospace; }
-
-.nx-online {
-  color: var(--nx-lime);
-  text-shadow: 0 0 8px var(--nx-lime);
+/* ─── UTILITIES (OPTIONAL) ─── */
+.font-display {
+  font-family: var(--font-display);
 }
 
-.nx-label {
-  font-size: 11px;
-  color: var(--nx-cyan);
-  letter-spacing: 1.5px;
-  margin-bottom: 8px;
-  font-family: 'Orbitron', sans-serif;
+.font-mono {
+  font-family: var(--font-mono);
 }
 
-/* Placeholder color fix */
-.nx-input::placeholder {
-  color: rgba(255, 255, 255, 0.2);
-}
-/* Normal state: Box ko transparent aur dark rakhne ke liye */
-.nx-input {
-  background-color: rgba(10, 11, 15, 0.8) !important; /* Dark background */
-  color: white !important;
-  border: 1px solid rgba(0, 242, 255, 0.3) !important;
+.text-accent {
+  color: var(--accent);
 }
 
-/* Autofill state: Jab browser email automatic fill karta hai tab white color hatane ke liye */
-.nx-input:-webkit-autofill,
-.nx-input:-webkit-autofill:hover, 
-.nx-input:-webkit-autofill:focus,
-.nx-input:-webkit-autofill:active {
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: white !important;
-  /* Ye line white box ko black/dark shadow se replace kar degi */
-  box-shadow: 0 0 0 50px #0a0b0f inset !important; 
-  caret-color: white;
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent-dim);
+}
+
+/* ─── INPUT (DARK + TRANSPARENT FIX) ─── */
+input,
+textarea {
+  width: 100%;
+  padding: 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+
+  background: transparent !important; /* 👈 FULL TRANSPARENT */
+  color: var(--text-primary);
+
+  font-family: var(--font-main);
+  outline: none;
+}
+
+input,
+select,
+textarea {
+  background: rgba(0, 25, 60, 0.6);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  padding: 10px;
+  width: 100%;
+}
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-glow);
+  outline: none;
+}
+
+/* 🚨 AUTOFILL WHITE FIX (IMPORTANT) */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill {
+  -webkit-text-fill-color: var(--text-primary) !important;
+  box-shadow: 0 0 0px 1000px transparent inset !important;
+  transition: background-color 5000s ease-in-out 0s;
 }
