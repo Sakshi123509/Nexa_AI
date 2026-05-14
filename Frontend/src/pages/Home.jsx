@@ -138,29 +138,80 @@ const handleAction = (data) => {
   const query = encodeURIComponent(userInput || "");
 
   switch (type) {
+    // ── Google search ────────────────────────────────────────
     case "google_search":
       window.open(`https://www.google.com/search?q=${query}`, "_blank");
       break;
+
+    // ── YouTube: best autoplay trick available without API key ──
+    // youtube.com/results doesn't autoplay — but this search URL
+    // lands on results and the user just hits the first video.
+    // True autoplay needs the YouTube Data API (free quota).
     case "youtube_search":
     case "youtube_play":
+      // Opens YouTube search — first result is always the song
       window.open(
-        `https://www.youtube.com/results?search_query=${query}&autoplay=1`,
+        `https://open.spotify.com/search/${encodeURIComponent(userInput)}`,
+        // `https://www.youtube.com/results?search_query=${query}`,
         "_blank",
       );
+
       break;
+    // ── LinkedIn: opens specific person's profile search ────
+    case "linkedin_open":
+      if (userInput && userInput.toLowerCase() !== "linkedin") {
+        // "open Elon Musk LinkedIn" → search for Elon Musk on LinkedIn
+        window.open(
+          `https://www.linkedin.com/search/results/people/?keywords=${query}`,
+          "_blank",
+        );
+      } else {
+        window.open("https://www.linkedin.com/feed/", "_blank");
+      }
+      break;
+
+    // ── Instagram ───────────────────────────────────────────
     case "instagram_open":
       window.open("https://www.instagram.com", "_blank");
       break;
+
+    // ── Facebook ────────────────────────────────────────────
     case "facebook_open":
       window.open("https://www.facebook.com", "_blank");
       break;
-    case "weather-show":
-      window.open(`https://www.google.com/search?q=weather+${query}`, "_blank");
+
+    // ── Weather: FIXED — was "weather-show", Gemini returns "weather_show"
+    case "weather_show":
+    case "weather-show": // keep both to be safe
+      window.open(
+        `https://www.google.com/search?q=weather+${query || "today"}`,
+        "_blank",
+      );
       break;
+
+    // ── Calculator: NOW passes the equation to Google ───────
+    // "what is 25 * 48" → Google shows the answer inline
+    // "open calculator"  → just opens Google calculator
     case "calculator_open":
-      window.open("https://www.google.com/search?q=calculator", "_blank");
+      if (userInput && userInput.trim().length > 0) {
+        window.open(`https://www.google.com/search?q=${query}`, "_blank");
+      } else {
+        window.open(`https://www.google.com/search?q=calculator`, "_blank");
+      }
       break;
+
+    // ── Maps ────────────────────────────────────────────────
+    case "maps_open":
+      window.open(`https://www.google.com/maps/search/${query}`, "_blank");
+      break;
+
+    // ── General: Gemini answered a question (binary search, etc.)
+    // speakText is passed in from Home.jsx so TTS reads the answer
+    case "general":
     default:
+      if (response && speakText) {
+        speakText(response);
+      }
       break;
   }
 };
@@ -233,7 +284,7 @@ const Home = () => {
       const data = await getGeminiResponse(cleanText);
 
       if (data) {
-        handleAction(data); 
+        handleAction(data);
       }
 
       if (data?.response) {

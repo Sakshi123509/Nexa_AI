@@ -7,8 +7,9 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import logo from "../assets/removed_logo.png";
 import bg from "../assets/bgside.jpg";
-import chat from "../pages/chat.jsx"
+import chat from "../pages/chat.jsx";
 import Dashboard from "../pages/Dashboard";
+import axios from "axios";
 
 // ─── Icons ───────────────────────────────────────────
 const Icons = {
@@ -191,6 +192,16 @@ export default function Navbar({ unreadCount = 0 }) {
   // ── Dynamic user — read from localStorage directly ──
   // This runs on mount AND updates if storage changes
   const [userData, setuserData] = useState(() => loadUserFromStorage());
+  const handleLogout = async () => {
+    try {
+      await axios.get(`${serverUrl}/api/auth/logout`, {
+        withCredentials: true,
+      });
+    } catch (_) {}
+    localStorage.clear();
+    setuserData(null); // ← updates context → Navbar re-renders immediately
+    navigate("/login");
+  };
 
   function loadUserFromStorage() {
     try {
@@ -603,14 +614,9 @@ export default function Navbar({ unreadCount = 0 }) {
             position: "relative",
             boxSizing: "border-box",
           }}
-          onClick={() => {
-            localStorage.clear();
-            setuserData(null);
-            navigate("/login");
-          }}
+          onClick={handleLogout}
           onMouseEnter={() => setLogoutHov(true)}
           onMouseLeave={() => setLogoutHov(false)}
-
         >
           <span style={{ display: "flex", color: "inherit", flexShrink: 0 }}>
             {Icons.logout}
