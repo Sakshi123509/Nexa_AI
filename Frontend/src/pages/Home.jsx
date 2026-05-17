@@ -133,34 +133,26 @@ import { initNeuralBackground } from "../components/Animation.jsx";
 import { RiFontFamily } from "react-icons/ri";
 import Navbar from "../components/Navbar.jsx";
 
-const handleAction = (data) => {
-  const { type, userInput } = data;
+const handleAction = (data, speakText) => {
+  const { type, userInput, response } = data;
+
   const query = encodeURIComponent(userInput || "");
 
   switch (type) {
-    // ── Google search ────────────────────────────────────────
     case "google_search":
       window.open(`https://www.google.com/search?q=${query}`, "_blank");
       break;
 
-    // ── YouTube: best autoplay trick available without API key ──
-    // youtube.com/results doesn't autoplay — but this search URL
-    // lands on results and the user just hits the first video.
-    // True autoplay needs the YouTube Data API (free quota).
     case "youtube_search":
     case "youtube_play":
-      // Opens YouTube search — first result is always the song
       window.open(
         `https://open.spotify.com/search/${encodeURIComponent(userInput)}`,
-        // `https://www.youtube.com/results?search_query=${query}`,
         "_blank",
       );
-
       break;
-    // ── LinkedIn: opens specific person's profile search ────
+
     case "linkedin_open":
       if (userInput && userInput.toLowerCase() !== "linkedin") {
-        // "open Elon Musk LinkedIn" → search for Elon Musk on LinkedIn
         window.open(
           `https://www.linkedin.com/search/results/people/?keywords=${query}`,
           "_blank",
@@ -170,28 +162,22 @@ const handleAction = (data) => {
       }
       break;
 
-    // ── Instagram ───────────────────────────────────────────
     case "instagram_open":
       window.open("https://www.instagram.com", "_blank");
       break;
 
-    // ── Facebook ────────────────────────────────────────────
     case "facebook_open":
       window.open("https://www.facebook.com", "_blank");
       break;
 
-    // ── Weather: FIXED — was "weather-show", Gemini returns "weather_show"
     case "weather_show":
-    case "weather-show": // keep both to be safe
+    case "weather-show":
       window.open(
         `https://www.google.com/search?q=weather+${query || "today"}`,
         "_blank",
       );
       break;
 
-    // ── Calculator: NOW passes the equation to Google ───────
-    // "what is 25 * 48" → Google shows the answer inline
-    // "open calculator"  → just opens Google calculator
     case "calculator_open":
       if (userInput && userInput.trim().length > 0) {
         window.open(`https://www.google.com/search?q=${query}`, "_blank");
@@ -200,16 +186,13 @@ const handleAction = (data) => {
       }
       break;
 
-    // ── Maps ────────────────────────────────────────────────
     case "maps_open":
       window.open(`https://www.google.com/maps/search/${query}`, "_blank");
       break;
 
-    // ── General: Gemini answered a question (binary search, etc.)
-    // speakText is passed in from Home.jsx so TTS reads the answer
     case "general":
     default:
-      if (response && speakText) {
+      if (response) {
         speakText(response);
       }
       break;
@@ -220,6 +203,8 @@ const Home = () => {
   const navigate = useNavigate();
   //start listning
   const [isListening, setIsListening] = useState(false);
+  const [transcript, setTranscript] = useState("");
+  const [response, setresponse] = useState("");
   const recognitionRef = useRef(null);
 
   const { userData, serverUrl, setuserData, getGeminiResponse } =
@@ -261,15 +246,23 @@ const Home = () => {
     recognition.interimResults = false;
 
     const speakText = (text) => {
-      speechSynthesis.cancel();
+      window.speechSynthesis.cancel();
+
       const utterance = new SpeechSynthesisUtterance(text);
-      speechSynthesis.speak(utterance);
+
+      utterance.lang = "en-US";
+      utterance.volume = 1;
+      utterance.rate = 1;
+      utterance.pitch = 1;
+
+      window.speechSynthesis.speak(utterance);
     };
 
     recognition.onresult = async (e) => {
       const transcript = e.results[e.results.length - 1][0].transcript.trim();
 
       console.log("You said:", transcript);
+      setTranscript(transcript);
 
       // 🎯 assistant trigger
       if (!transcript.toLowerCase().includes(assistantName)) return;
@@ -283,9 +276,11 @@ const Home = () => {
 
       const data = await getGeminiResponse(cleanText);
 
-      if (data) {
-        handleAction(data);
+      if (data?.response) {
+        setresponse(data.response);
       }
+
+      handleAction(data, speakText);
 
       if (data?.response) {
         speakText(data.response);
@@ -543,6 +538,29 @@ const Home = () => {
           >
             {isListening ? "🛑 Stop Listening" : "🎤 Start Listening"}
           </button>
+        </div>
+        <div
+          style={{
+            marginTop: "20px",
+            color: "white",
+            fontSize: "18px",
+            padding: "12px 20px",
+            borderRadius: "12px",
+            maxWidth: "700px",
+            textAlign: "center",
+            backdropFilter: "blur(10px)",
+            lineHeight: "1.7",
+          }}
+        >
+          <p>
+            {transcript ? `🎤 You said: ${transcript}` : "Say something..."}
+          </p>
+
+          {response && (
+            <p style={{ marginTop: "12px", color: "#00f2ff" }}>
+              🤖 AI: {response}
+            </p>
+          )}
         </div>
       </div>
     </div>
