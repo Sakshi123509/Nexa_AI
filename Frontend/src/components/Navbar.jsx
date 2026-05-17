@@ -192,15 +192,28 @@ export default function Navbar({ unreadCount = 0 }) {
   // ── Dynamic user — read from localStorage directly ──
   // This runs on mount AND updates if storage changes
   const [userData, setuserData] = useState(() => loadUserFromStorage());
+  // Navbar mein logout function ko yeh se replace karo
   const handleLogout = async () => {
     try {
+      window.speechSynthesis?.cancel();
       await axios.get(`${serverUrl}/api/auth/logout`, {
         withCredentials: true,
       });
-    } catch (_) {}
-    localStorage.clear();
-    setuserData(null); // ← updates context → Navbar re-renders immediately
-    navigate("/login");
+    } catch (err) {
+      console.log(err);
+    } finally {
+      // Sab kuch force clear karo
+      localStorage.clear();
+      sessionStorage.clear();
+      setuserData(null);
+
+      // Cookie manually delete karo browser se
+      document.cookie =
+        "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
+      // Hard redirect — navigate() nahi, window.location use karo
+      window.location.href = "/login";
+    }
   };
 
   function loadUserFromStorage() {

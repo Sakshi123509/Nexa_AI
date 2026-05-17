@@ -1,295 +1,287 @@
-// import { useContext, useEffect } from "react";
-// import { UserDataContext } from "../contextAPI/Usercontext";
-// import { useNavigate } from "react-router-dom";
-// import axios from "axios";
-// // import responseurl from "../../../Backend/gemini_api";
-// // responseurl import NAHI karna frontend mein!
-
-// const Home = () => {
-//   const navigate = useNavigate();
-//   const { userData, serverUrl, setuserData, getGeminiResponse } =
-//     useContext(UserDataContext);
-
-//   const handleLogout = async () => {
-//     try {
-//       await axios.get(`${serverUrl}/api/auth/logout`, {
-//         withCredentials: true,
-//       });
-//       setuserData(null);
-//       navigate("/login");
-//     } catch (error) {
-//       console.log(error);
-//     }
-//   };
-
-//   useEffect(() => {
-//     if (!userData) return;
-
-//     const SpeechRecognition =
-//       window.SpeechRecognition || window.webkitSpeechRecognition;
-//     if (!SpeechRecognition) {
-//       console.log("SpeechRecognition is not supported by this browser.");
-//       return;
-//     }
-
-//     const recognition = new SpeechRecognition();
-//     recognition.continuous = true;
-//     recognition.lang = "en-US";
-//     recognition.interimResults = false;
-
-//     recognition.onresult = async (e) => {
-//       const transcript = e.results[e.results.length - 1][0].transcript.trim();
-//       console.log("voice:", transcript);
-//       console.log(e.results);
-
-//       if (transcript.toLowerCase().includes(userData?.Ainame?.toLowerCase())) {
-//         const data = await getGeminiResponse(transcript);
-//         console.log("Gemini data:", data);
-//         if (data?.response) {
-//           const utterance = new SpeechSynthesisUtterance(data.response);
-//           utterance.lang = "en-US";
-//           utterance.rate = 0.9;
-//           speechSynthesis.speak(utterance);
-//         }
-//       }
-//     };
-
-//     recognition.onerror = (e) => {
-//       const ignoredErrors = ["no-speech", "aborted", "audio-capture"];
-//       if (!ignoredErrors.includes(e.error)) {
-//         console.log("SpeechRecognition error:", e.error, e.message || "");
-//       }
-//     };
-
-//     recognition.onend = () => {
-//       try {
-//         recognition.start();
-//       } catch (e) {
-//         console.log("Restart error:", e);
-//       }
-//     };
-
-//     recognition.start();
-
-//     return () => {
-//       recognition.onerror = null;
-//       recognition.onresult = null;
-//       recognition.onend = null;
-//       try {
-//         recognition.abort?.();
-//         recognition.stop?.();
-//       } catch (e) {
-//         console.log("SpeechRecognition cleanup error:", e);
-//       }
-//     };
-//   }, [userData]);
-//   return (
-//     <div>
-//       <div className="w-full min-h-screen bg-linear-to-b from-black to-[#050353] flex flex-col justify-center items-center relative p-5 px-6 sm:px-16 md:px-24 lg:px-44 rounded-3xl">
-//         <div className="absolute top-5 right-6 flex gap-3">
-//           <button
-//             onClick={() => navigate("/customize")}
-//             className="px-4 py-2 text-sm text-white border border-purple-500 rounded-xl hover:bg-purple-500 transition-all duration-300 cursor-pointer"
-//           >
-//             Customize
-//           </button>
-//           <button
-//             onClick={handleLogout}
-//             className="px-4 py-2 text-sm text-white bg-red-500/20 border border-red-500 rounded-xl hover:bg-red-500 transition-all duration-300 cursor-pointer"
-//           >
-//             Logout
-//           </button>
-//         </div>
-
-//         {/* Image — fixed size */}
-//         <div className="overflow-hidden w-[280px] h-[380px] rounded-3xl shadow-xl">
-//           <img
-//             src={userData?.AIimg}
-//             alt=""
-//             className="w-full h-full object-cover object-top"
-//           />
-//         </div>
-
-//         <div className="flex mt-4 justify-center items-center flex-col">
-//           <h1 className="text-white text-3xl font-bold mb-2">
-//             Hello, I'm{" "}
-//             <span className="text-purple-400">{userData?.Ainame}</span>
-//           </h1>
-//           <p className="text-white/60 text-sm mb-6">
-//             Your AI Assistant — How can I help you?
-//           </p>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-// export default Home;
+//final
+// src/pages/Home.jsx
+// NO SpeechContext needed — everything is self-contained here
+// Voice settings (language, gender, volume) are stored in localStorage directly
 
 import { useContext, useEffect, useState, useRef } from "react";
-import { UserDataContext } from "../contextAPI/Usercontext";
+import { UserDataContext } from "../contextAPI/Usercontext.jsx";
 import { useNavigate } from "react-router-dom";
+
 import axios from "axios";
 import { initNeuralBackground } from "../components/Animation.jsx";
-import { RiFontFamily } from "react-icons/ri";
 import Navbar from "../components/Navbar.jsx";
 
-const handleAction = (data, speakText) => {
-  const { type, userInput, response } = data;
+/* ── Load / Save voice settings from localStorage ───── */
+const STORAGE_KEY = "ai_voice_settings";
 
+function loadVoiceSettings() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw
+      ? JSON.parse(raw)
+      : { language: "English", gender: "Female", volume: 1, rate: 1 };
+  } catch {
+    return { language: "English", gender: "Female", volume: 1, rate: 1 };
+  }
+}
+
+function saveVoiceSettings(settings) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+}
+
+/* ── Language code map ───────────────────────────────── */
+const LANG_CODES = { English: "en-US", Hindi: "hi-IN", Marathi: "mr-IN" };
+
+/* ── Pick best matching browser voice ───────────────── */
+function pickVoice(voices, langCode, gender) {
+  const femaleHints = [
+    "female",
+    "woman",
+    "zira",
+    "susan",
+    "hazel",
+    "samantha",
+    "google",
+  ];
+  const maleHints = ["male", "man", "david", "mark", "daniel", "james"];
+  const hints = gender === "Female" ? femaleHints : maleHints;
+  const matchGender = (v) =>
+    hints.some((h) => v.name.toLowerCase().includes(h));
+
+  const exact = voices.filter((v) => v.lang === langCode);
+  const exactG = exact.filter(matchGender);
+  if (exactG.length) return exactG[0];
+  if (exact.length) return exact[0];
+
+  const prefix = langCode.split("-")[0];
+  const broad = voices.filter((v) => v.lang.startsWith(prefix));
+  const broadG = broad.filter(matchGender);
+  if (broadG.length) return broadG[0];
+  if (broad.length) return broad[0];
+
+  return null;
+}
+
+/* ── Action handler (open URLs) ─────────────────────── */
+const handleAction = (data) => {
+  const { type, userInput } = data;
   const query = encodeURIComponent(userInput || "");
 
   switch (type) {
     case "google_search":
       window.open(`https://www.google.com/search?q=${query}`, "_blank");
       break;
-
     case "youtube_search":
     case "youtube_play":
       window.open(
-        `https://open.spotify.com/search/${encodeURIComponent(userInput)}`,
+        `https://www.youtube.com/results?search_query=${query}`,
         "_blank",
       );
       break;
-
     case "linkedin_open":
-      if (userInput && userInput.toLowerCase() !== "linkedin") {
-        window.open(
-          `https://www.linkedin.com/search/results/people/?keywords=${query}`,
-          "_blank",
-        );
-      } else {
-        window.open("https://www.linkedin.com/feed/", "_blank");
-      }
+      window.open(
+        userInput?.toLowerCase() !== "linkedin"
+          ? `https://www.linkedin.com/search/results/people/?keywords=${query}`
+          : "https://www.linkedin.com/feed/",
+        "_blank",
+      );
       break;
-
     case "instagram_open":
       window.open("https://www.instagram.com", "_blank");
       break;
-
     case "facebook_open":
       window.open("https://www.facebook.com", "_blank");
       break;
-
     case "weather_show":
     case "weather-show":
-      window.open(
-        `https://www.google.com/search?q=weather+${query || "today"}`,
-        "_blank",
-      );
+      window.open(`https://www.google.com/search?q=weather+${query}`, "_blank");
       break;
-
     case "calculator_open":
-      if (userInput && userInput.trim().length > 0) {
-        window.open(`https://www.google.com/search?q=${query}`, "_blank");
-      } else {
-        window.open(`https://www.google.com/search?q=calculator`, "_blank");
-      }
+      window.open("https://www.google.com/search?q=calculator", "_blank");
       break;
-
     case "maps_open":
       window.open(`https://www.google.com/maps/search/${query}`, "_blank");
       break;
-
-    case "general":
     default:
-      if (response) {
-        speakText(response);
-      }
       break;
   }
 };
 
+/* ── Home ────────────────────────────────────────────── */
 const Home = () => {
   const navigate = useNavigate();
-  //start listning
-  const [isListening, setIsListening] = useState(false);
-  const [transcript, setTranscript] = useState("");
-  const [response, setresponse] = useState("");
-  const recognitionRef = useRef(null);
-
   const { userData, serverUrl, setuserData, getGeminiResponse } =
     useContext(UserDataContext);
 
-  const canvasRef = useRef(null);
+  const [isListening, setIsListening] = useState(false);
+  const [transcript, setTranscript] = useState("");
+  const [aiResponse, setAiResponse] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
+  // Voice settings — loaded from localStorage, saved on every change
+  const [voiceSettings, setVoiceSettingsState] = useState(loadVoiceSettings);
+
+  const recognitionRef = useRef(null);
+  const canvasRef = useRef(null);
+  const voicesRef = useRef([]); // browser voices list
+
+  // Helper to update settings + auto-save
+  const setVoiceSettings = (updater) => {
+    setVoiceSettingsState((prev) => {
+      const next =
+        typeof updater === "function" ? updater(prev) : { ...prev, ...updater };
+      saveVoiceSettings(next);
+      return next;
+    });
+  };
+
+  // Init canvas
   useEffect(() => {
-    if (canvasRef.current) {
-      return initNeuralBackground(canvasRef.current);
-    }
+    if (canvasRef.current) return initNeuralBackground(canvasRef.current);
   }, []);
 
+  // Load browser voices
+  useEffect(() => {
+    const load = () => {
+      const v = window.speechSynthesis.getVoices();
+      if (v.length) voicesRef.current = v;
+    };
+    load();
+    window.speechSynthesis.onvoiceschanged = load;
+    return () => {
+      window.speechSynthesis.onvoiceschanged = null;
+    };
+  }, []);
+
+  // Track speaking state
+  useEffect(() => {
+    const id = setInterval(
+      () => setIsSpeaking(window.speechSynthesis.speaking),
+      200,
+    );
+    return () => clearInterval(id);
+  }, []);
+
+  /* ── Speak text using current voice settings ─────── */
+  const speakText = (text) => {
+    if (!text) return;
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    const langCode = LANG_CODES[voiceSettings.language] || "en-US";
+    const bestVoice = pickVoice(
+      voicesRef.current,
+      langCode,
+      voiceSettings.gender,
+    );
+
+    if (bestVoice) utterance.voice = bestVoice;
+    utterance.lang = langCode;
+    utterance.volume = voiceSettings.volume;
+    utterance.rate = voiceSettings.rate;
+
+    window.speechSynthesis.speak(utterance);
+  };
+
+  /* ── Save interaction to backend ─────────────────────
+     THIS is what makes History page and Dashboard work  */
+  const saveChat = async (userMessage, aiText) => {
+    try {
+      await axios.post(
+        `${serverUrl}/api/user/savechat`,
+        { userMessage, aiResponse: aiText, type: "VOICE" },
+        { withCredentials: true },
+      );
+      console.log("✅ Saved to history");
+    } catch (err) {
+      console.log("saveChat error:", err.message);
+    }
+  };
+
+  /* ── Logout ── */
   const handleLogout = async () => {
     try {
+      window.speechSynthesis.cancel();
       await axios.get(`${serverUrl}/api/auth/logout`, {
         withCredentials: true,
       });
       setuserData(null);
       navigate("/login");
-    } catch (error) {
-      console.log(error);
+    } catch (err) {
+      console.log(err);
     }
   };
-  const startListening = () => {
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
 
-    if (!SpeechRecognition) {
-      alert("Browser not supported");
+  /* ── Start listening ─────────────────────────────── */
+  const startListening = () => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) {
+      alert("Voice not supported. Use Chrome.");
       return;
     }
 
     const assistantName = userData?.Ainame?.toLowerCase() || "assistant";
+    const recogLang = LANG_CODES[voiceSettings.language] || "en-US";
 
-    const recognition = new SpeechRecognition();
+    const recognition = new SR();
     recognition.continuous = true;
-    recognition.lang = "en-US";
+    recognition.lang = recogLang;
     recognition.interimResults = false;
 
-    const speakText = (text) => {
-      window.speechSynthesis.cancel();
-
-      const utterance = new SpeechSynthesisUtterance(text);
-
-      utterance.lang = "en-US";
-      utterance.volume = 1;
-      utterance.rate = 1;
-      utterance.pitch = 1;
-
-      window.speechSynthesis.speak(utterance);
-    };
-
     recognition.onresult = async (e) => {
-      const transcript = e.results[e.results.length - 1][0].transcript.trim();
+      const said = e.results[e.results.length - 1][0].transcript.trim();
+      console.log("🎤 You said:", said);
+      setTranscript(said);
 
-      console.log("You said:", transcript);
-      setTranscript(transcript);
+      // Only respond if assistant name is mentioned
+      if (!said.toLowerCase().includes(assistantName)) return;
 
-      // 🎯 assistant trigger
-      if (!transcript.toLowerCase().includes(assistantName)) return;
-
-      const cleanText = transcript
+      // Strip assistant name from command
+      const command = said
         .toLowerCase()
-        .replace(assistantName, "")
+        .replace(new RegExp(assistantName, "gi"), "")
         .trim();
+      if (!command) return;
 
-      if (!cleanText) return;
+      setIsProcessing(true);
+      try {
+        const data = await getGeminiResponse(command);
 
-      const data = await getGeminiResponse(cleanText);
+        if (!data) {
+          const errMsg = "Sorry, I couldn't connect. Please try again.";
+          setAiResponse(errMsg);
+          speakText(errMsg);
+          await saveChat(command, errMsg); // save even errors
+          return;
+        }
 
-      if (data?.response) {
-        setresponse(data.response);
-      }
+        const aiText = data.response || "";
+        setAiResponse(aiText);
 
-      handleAction(data, speakText);
+        // ✅ Save to history — this updates History page + Dashboard stats
+        await saveChat(command, aiText);
 
-      if (data?.response) {
-        speakText(data.response);
+        // Open URLs for google/youtube etc.
+        handleAction(data);
+
+        // Speak the response
+        if (aiText) speakText(aiText);
+      } catch (err) {
+        console.log("Error:", err);
+      } finally {
+        setIsProcessing(false);
       }
     };
 
-    recognition.onend = () => {
-      setIsListening(false);
+    recognition.onerror = (e) => {
+      const ignored = ["no-speech", "aborted", "audio-capture"];
+      if (!ignored.includes(e.error))
+        console.log("Recognition error:", e.error);
     };
+
+    recognition.onend = () => setIsListening(false);
 
     recognition.start();
     recognitionRef.current = recognition;
@@ -298,143 +290,11 @@ const Home = () => {
 
   const stopListening = () => {
     recognitionRef.current?.stop();
+    window.speechSynthesis.cancel();
     setIsListening(false);
   };
 
-  // useEffect(() => {
-  //   if (!userData) return;
-
-  //   const assistantName = userData?.Ainame?.trim() || "assistant";
-
-  //   const speechRecognition =
-  //     window.SpeechRecognition || window.webkitSpeechRecognition;
-
-  //   if (!speechRecognition) {
-  //     console.log("SpeechRecognition not supported");
-  //     return;
-  //   }
-
-  //   const speakText = (text) => {
-  //     if (!text) return;
-  //     speechSynthesis.cancel();
-  //     const utterance = new SpeechSynthesisUtterance(text);
-  //     utterance.lang = "en-US";
-  //     utterance.rate = 0.95;
-  //     speechSynthesis.speak(utterance);
-  //   };
-
-  //   const isAssistantTriggered = (transcript) => {
-  //     const regex = new RegExp(`\\b(hey\\s+)?${assistantName}\\b`, "i");
-  //     return regex.test(transcript.toLowerCase());
-  //   };
-
-  //   const stripAssistantName = (transcript) => {
-  //     return transcript
-  //       .replace(
-  //         new RegExp(`\\b(hey\\s+)?${assistantName}\\b[,\\s]*`, "gi"),
-  //         "",
-  //       )
-  //       .trim();
-  //   };
-
-  //   const openWebCommand = (target) => {
-  //     const t = target.toLowerCase();
-
-  //     if (t.includes("linkedin")) {
-  //       window.open("https://www.linkedin.com", "_blank");
-  //       return true;
-  //     }
-  //     if (t.includes("youtube")) {
-  //       window.open("https://www.youtube.com", "_blank");
-  //       return true;
-  //     }
-  //     if (t.includes("google")) {
-  //       window.open("https://www.google.com", "_blank");
-  //       return true;
-  //     }
-  //     if (t.includes("instagram")) {
-  //       window.open("https://www.instagram.com", "_blank");
-  //       return true;
-  //     }
-  //     if (t.includes("facebook")) {
-  //       window.open("https://www.facebook.com", "_blank");
-  //       return true;
-  //     }
-  //     if (t.includes("calculator")) {
-  //       window.open("https://www.google.com/search?q=calculator", "_blank");
-  //       return true;
-  //     }
-  //     if (t.includes("weather")) {
-  //       window.open("https://www.google.com/search?q=weather", "_blank");
-  //       return true;
-  //     }
-
-  //     return false;
-  //   };
-
-  //   const handlecommand = async (rawTranscript) => {
-  //     if (!isAssistantTriggered(rawTranscript)) return;
-
-  //     const commandText = stripAssistantName(rawTranscript);
-  //     if (!commandText || commandText.length < 3) return;
-
-  //     const openMatch = commandText.match(/^open\s+(.+)/i);
-  //     if (openMatch) {
-  //       const target = openMatch[1].trim();
-  //       const opened = openWebCommand(target);
-  //       if (opened) {
-  //         speakText(`Opening ${target}`);
-  //         return;
-  //       }
-  //     }
-
-  //     const data = await getGeminiResponse(commandText);
-
-  //     if (!data) {
-  //       speakText("I couldn't connect. Please try again.");
-  //       return;
-  //     }
-
-  //     handleAction(data);
-  //     speakText(data.response || "Done!");
-  //   };
-
-  //   const recognition = new speechRecognition();
-  //   recognition.continuous = true;
-  //   recognition.lang = "en-US";
-  //   recognition.interimResults = false;
-
-  //   recognition.onresult = async (e) => {
-  //     const transcript = e.results[e.results.length - 1][0].transcript.trim();
-  //     await handlecommand(transcript);
-  //   };
-
-  //   recognition.onerror = (e) => {
-  //     if (e.error === "not-allowed") {
-  //       speakText("Please allow microphone access.");
-  //     }
-  //   };
-
-  //   recognition.onend = () => {
-  //     try {
-  //       recognition.start();
-  //     } catch (e) {
-  //       console.log("Restart error:", e);
-  //     }
-  //   };
-
-  //   recognition.start();
-
-  //   return () => {
-  //     recognition.onresult = null;
-  //     recognition.onerror = null;
-  //     recognition.onend = null;
-  //     try {
-  //       recognition.abort();
-  //     } catch (_) {}
-  //   };
-  // }, [userData, getGeminiResponse]);
-
+  /* ── Render ─────────────────────────────────────────── */
   return (
     <div
       style={{
@@ -447,7 +307,27 @@ const Home = () => {
       }}
     >
       <Navbar />
-      {/* Canvas FIXED */}
+
+      {/* ⚙ Settings button — top right */}
+      <button
+        onClick={() => setShowSettings(true)}
+        style={{
+          position: "fixed",
+          top: 16,
+          right: 20,
+          zIndex: 20,
+          background: "rgba(0,242,255,0.08)",
+          border: "1px solid rgba(0,242,255,0.2)",
+          color: "#00f2ff",
+          borderRadius: 8,
+          padding: "6px 12px",
+          fontSize: 18,
+          cursor: "pointer",
+        }}
+      >
+        ⚙
+      </button>
+
       <canvas
         ref={canvasRef}
         style={{
@@ -466,320 +346,407 @@ const Home = () => {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
+          flexDirection: "column",
           position: "relative",
           padding: "20px 24px",
-          borderRadius: "24px",
           zIndex: 10,
-          flexDirection: "column",
         }}
       >
-        {/* Center Content */}
+        {/* Avatar + name */}
         <div
           style={{
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            justifyContent: "center",
             textAlign: "center",
           }}
         >
-          {/* Image */}
           <div
             style={{
-              width: "260px",
-              height: "260px",
+              width: 260,
+              height: 260,
               borderRadius: "50%",
               overflow: "hidden",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              boxShadow: "0 0 30px rgba(0,255,255,0.2)", // optional glow
+              transition: "box-shadow 0.4s ease",
+              boxShadow: isListening
+                ? "0 0 0 4px #00f2ff, 0 0 50px rgba(0,242,255,0.5)"
+                : isSpeaking
+                  ? "0 0 0 4px #5aefb8, 0 0 40px rgba(90,239,184,0.4)"
+                  : "0 0 30px rgba(0,255,255,0.15)",
             }}
           >
             <img
               src={userData?.AIimg}
               alt="Assistant"
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-              }}
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
           </div>
 
-          {/* Text */}
-          <div
+          <h1
             style={{
-              marginTop: "16px",
-              fontFamily: "var(--font-main)",
+              fontSize: 26,
+              margin: "16px 0 0",
+              color: "#fff",
+              fontWeight: 700,
             }}
           >
-            <h1 style={{ fontSize: "24px" }}>
-              Hello, I'm <span>{userData?.Ainame}</span>
-            </h1>
+            Hello, I'm{" "}
+            <span
+              style={{
+                color: "#00f2ff",
+                textShadow: "0 0 12px rgba(0,242,255,0.4)",
+              }}
+            >
+              {userData?.Ainame}
+            </span>
+          </h1>
 
-            <p style={{ marginTop: "8px", opacity: 0.8 }}>
-              Your AI Assistant — How can I help you?
-            </p>
-          </div>
-          <button
+          <p
             style={{
-              marginTop: "20px",
-              padding: "10px 20px",
-              borderRadius: "8px",
-              background: "#00f2ff",
-              border: "none",
-              cursor: "pointer",
-              color: "var(--bg-soft)",
+              marginTop: 8,
+              opacity: 0.5,
+              fontSize: 14,
+              fontFamily: "monospace",
+              color: "#fff",
             }}
-            onClick={() => {
-              isListening ? stopListening() : startListening();
+          >
+            Your AI Assistant — How can I help you?
+          </p>
+
+          {/* Active settings badge */}
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              marginTop: 10,
+              padding: "4px 14px",
+              borderRadius: 999,
+              background: "rgba(0,242,255,0.08)",
+              border: "1px solid rgba(0,242,255,0.2)",
+              fontSize: 11,
+              fontFamily: "monospace",
+              color: "#00f2ff",
+            }}
+          >
+            🌐 {voiceSettings.language} · {voiceSettings.gender} · Vol{" "}
+            {Math.round(voiceSettings.volume * 100)}%
+          </div>
+
+          {/* Listen button */}
+          <button
+            onClick={isListening ? stopListening : startListening}
+            style={{
+              marginTop: 24,
+              padding: "12px 32px",
+              borderRadius: 12,
+              fontSize: 14,
+              fontFamily: "monospace",
+              letterSpacing: "0.5px",
+              cursor: "pointer",
+              border: `1px solid ${isListening ? "#ef4444" : "#00f2ff"}`,
+              background: isListening
+                ? "rgba(239,68,68,0.12)"
+                : "rgba(0,242,255,0.1)",
+              color: isListening ? "#ef4444" : "#00f2ff",
+              transition: "all .2s",
             }}
           >
             {isListening ? "🛑 Stop Listening" : "🎤 Start Listening"}
           </button>
+
+          {/* Status */}
+          <div
+            style={{
+              marginTop: 10,
+              height: 20,
+              fontFamily: "monospace",
+              fontSize: 11,
+            }}
+          >
+            {isProcessing && (
+              <span style={{ color: "#f0a060" }}>⏳ PROCESSING...</span>
+            )}
+            {isSpeaking && !isProcessing && (
+              <span style={{ color: "#5aefb8" }}>● SPEAKING...</span>
+            )}
+            {isListening && !isProcessing && !isSpeaking && (
+              <span style={{ color: "#00f2ff" }}>● LISTENING...</span>
+            )}
+          </div>
         </div>
         <div
           style={{
-            marginTop: "20px",
-            color: "white",
-            fontSize: "18px",
-            padding: "12px 20px",
-            borderRadius: "12px",
-            maxWidth: "700px",
+            marginTop: 28,
+            maxWidth: 680,
+            width: "100%",
+            color: "#fff",
+            fontSize: 14,
+           
+            borderRadius: 14,
             textAlign: "center",
-            backdropFilter: "blur(10px)",
-            lineHeight: "1.7",
           }}
         >
-          <p>
-            {transcript ? `🎤 You said: ${transcript}` : "Say something..."}
+          <p
+            style={{
+              color: transcript ? "#fff" : "rgba(255,255,255,0.3)",
+              margin: 0,
+            }}
+          >
+            {transcript ? `🎤 You: ${transcript}` : "Say something..."}
           </p>
-
-          {response && (
-            <p style={{ marginTop: "12px", color: "#00f2ff" }}>
-              🤖 AI: {response}
+          {aiResponse && (
+            <p style={{ marginTop: 12, color: "#00f2ff", margin: "12px 0 0" }}>
+              🤖 {userData?.Ainame}: {aiResponse}
             </p>
           )}
         </div>
+        {/* Transcript + response box */}
+        {/* <div
+        >
+          <p
+            style={{
+              color: transcript ? "#fff" : "rgba(255,255,255,0.3)",
+              margin: 0,
+            }}
+          >
+            {transcript
+              ? `🎤 ${transcript}`
+              : `Say "${userData?.Ainame}" to begin...`}
+          </p>
+          {aiResponse && (
+            <p style={{ marginTop: 12, color: "#00f2ff", margin: "12px 0 0" }}>
+              🤖 {aiResponse}
+            </p>
+          )}
+        </div> */}
       </div>
+      {/* ── Side Settings Drawer ── */}
+      {showSettings && (
+        <>
+          {/* Backdrop */}
+          <div
+            onClick={() => setShowSettings(false)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 30,
+              background: "rgba(0,0,0,0.4)",
+              backdropFilter: "blur(2px)",
+            }}
+          />
+
+          {/* Drawer panel */}
+          <div
+            style={{
+              position: "fixed",
+              top: 0,
+              right: 0,
+              height: "100vh",
+              width: 300,
+              zIndex: 40,
+              background: "#050e1a",
+              borderLeft: "1px solid rgba(0,229,255,0.12)",
+              padding: "24px 20px",
+              overflowY: "auto",
+              display: "flex",
+              flexDirection: "column",
+              gap: 20,
+            }}
+          >
+            {/* Header */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: "monospace",
+                  fontSize: 11,
+                  color: "rgba(0,207,255,0.5)",
+                  letterSpacing: "2px",
+                }}
+              >
+                VOICE SETTINGS
+              </span>
+              <button
+                onClick={() => setShowSettings(false)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#fff",
+                  fontSize: 18,
+                  cursor: "pointer",
+                  opacity: 0.5,
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Language */}
+            <div>
+              <label
+                style={{
+                  fontSize: 10,
+                  fontFamily: "monospace",
+                  color: "rgba(0,207,255,0.4)",
+                  display: "block",
+                  marginBottom: 6,
+                }}
+              >
+                LANGUAGE
+              </label>
+              <select
+                value={voiceSettings.language}
+                onChange={(e) =>
+                  setVoiceSettings((s) => ({ ...s, language: e.target.value }))
+                }
+                style={{
+                  width: "100%",
+                  padding: "8px 10px",
+                  background: "rgba(0,0,0,0.4)",
+                  border: "1px solid rgba(0,229,255,0.15)",
+                  borderRadius: 8,
+                  color: "#e0f4ff",
+                  fontSize: 13,
+                  outline: "none",
+                }}
+              >
+                <option>English</option>
+                <option>Hindi</option>
+                <option>Marathi</option>
+              </select>
+            </div>
+
+            {/* Gender */}
+            <div>
+              <label
+                style={{
+                  fontSize: 10,
+                  fontFamily: "monospace",
+                  color: "rgba(0,207,255,0.4)",
+                  display: "block",
+                  marginBottom: 6,
+                }}
+              >
+                VOICE TYPE
+              </label>
+              <select
+                value={voiceSettings.gender}
+                onChange={(e) =>
+                  setVoiceSettings((s) => ({ ...s, gender: e.target.value }))
+                }
+                style={{
+                  width: "100%",
+                  padding: "8px 10px",
+                  background: "rgba(0,0,0,0.4)",
+                  border: "1px solid rgba(0,229,255,0.15)",
+                  borderRadius: 8,
+                  color: "#e0f4ff",
+                  fontSize: 13,
+                  outline: "none",
+                }}
+              >
+                <option>Female</option>
+                <option>Male</option>
+              </select>
+            </div>
+
+            {/* Volume */}
+            <div>
+              <label
+                style={{
+                  fontSize: 10,
+                  fontFamily: "monospace",
+                  color: "rgba(0,207,255,0.4)",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginBottom: 6,
+                }}
+              >
+                <span>VOLUME</span>
+                <span style={{ color: "#00cfff" }}>
+                  {Math.round(voiceSettings.volume * 100)}%
+                </span>
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                step="1"
+                value={Math.round(voiceSettings.volume * 100)}
+                onChange={(e) =>
+                  setVoiceSettings((s) => ({
+                    ...s,
+                    volume: Number(e.target.value) / 100,
+                  }))
+                }
+                style={{ width: "100%", accentColor: "#00cfff" }}
+              />
+            </div>
+
+            {/* Speed */}
+            <div>
+              <label
+                style={{
+                  fontSize: 10,
+                  fontFamily: "monospace",
+                  color: "rgba(0,207,255,0.4)",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginBottom: 6,
+                }}
+              >
+                <span>SPEED</span>
+                <span style={{ color: "#00cfff" }}>
+                  {voiceSettings.rate.toFixed(1)}x
+                </span>
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                step="1"
+                value={Math.round(((voiceSettings.rate - 0.5) / 1.5) * 100)}
+                onChange={(e) =>
+                  setVoiceSettings((s) => ({
+                    ...s,
+                    rate: 0.5 + (Number(e.target.value) / 100) * 1.5,
+                  }))
+                }
+                style={{ width: "100%", accentColor: "#00cfff" }}
+              />
+            </div>
+
+            {/* Test button */}
+            <button
+              onClick={() =>
+                speakText(
+                  `Hello, I am ${userData?.Ainame || "your assistant"}. Voice settings applied.`,
+                )
+              }
+              style={{
+                padding: "9px 18px",
+                borderRadius: 8,
+                fontSize: 12,
+                fontFamily: "monospace",
+                cursor: "pointer",
+                border: "1px solid rgba(0,207,255,0.2)",
+                background: "rgba(0,207,255,0.08)",
+                color: "#00cfff",
+              }}
+            >
+              🔊 Test Voice
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 };
 
 export default Home;
-
-// import { useEffect, useRef } from "react";
-// import bgImage from "../assets/bg.jpg";
-// import { initNeuralBackground } from "./HomeAnimation"; // Make sure path is correct
-
-// export default function Home() {
-//   const canvasRef = useRef(null);
-
-//   useEffect(() => {
-//     if (canvasRef.current) {
-//       // Start the canvas animation
-//       return initNeuralBackground(canvasRef.current);
-//     }
-//   }, []);
-
-//   // --- Inline Styles ---
-//   const rootStyle = {
-//     position: "relative",
-//     width: "100%",
-//     minHeight: "100vh",
-//     backgroundColor: "#05070a",
-//     overflow: "hidden",
-//   };
-
-//   const bgLayerStyle = {
-//     position: "absolute",
-//     inset: 0,
-//     backgroundImage: `url(${bgImage})`,
-//     backgroundSize: "cover",
-//     backgroundPosition: "center",
-//     zIndex: 0,
-//     opacity: 0.6, // Thoda kam taaki particles dikhein
-//     animation: "bgSubtleZoom 20s ease-in-out infinite alternate",
-//   };
-
-//   const canvasStyle = {
-//     position: "absolute",
-//     inset: 0,
-//     zIndex: 5, // Image ke upar par content ke niche
-//     pointerEvents: "none",
-//   };
-
-//   return (
-//     <div style={rootStyle}>
-//       {/* Layer 1: The Circuit Image */}
-//       <div style={bgLayerStyle} />
-
-//       {/* Layer 2: The Neural Canvas Animation */}
-//       <canvas ref={canvasRef} style={canvasStyle} />
-
-//       {/* Layer 3: Moving Data Particles (Optional) */}
-//       <div style={dataStreamStyle} />
-
-//       {/* Layer 4: Content */}
-//       <div style={{ position: "relative", zIndex: 10 }}>
-//         {/* Your Page Content Goes Here */}
-//       </div>
-
-//       <style>
-//         {`
-//           @keyframes bgSubtleZoom {
-//             0% { transform: scale(1); filter: brightness(0.8); }
-//             100% { transform: scale(1.1); filter: brightness(1.1); }
-//           }
-//           @keyframes dataFlow {
-//             0% { transform: translateY(-100%); }
-//             100% { transform: translateY(400%); }
-//           }
-//         `}
-//       </style>
-//     </div>
-//   );
-// }
-
-// const dataStreamStyle = {
-//   position: "absolute",
-//   top: 0,
-//   left: 0,
-//   width: "100%",
-//   height: "100%",
-//   background: "linear-gradient(to bottom, transparent, rgba(0, 242, 255, 0.03), transparent)",
-//   zIndex: 2,
-//   animation: "dataFlow 8s linear infinite",
-// };
-
-// return (
-//   <div className="home-root">
-//     {/* Internal CSS Injection */}
-//     <style>{`
-//       .home-root {
-//         width: 100vw;
-//         height: 100vh;
-//         position: fixed;
-//         top: 0;
-//         left: 0;
-//         display: flex;
-//         justify-content: center;
-//         align-items: center;
-//         background: #05070a url(${homebg}) no-repeat center center/cover;
-//         font-family: 'Inter', sans-serif;
-//       }
-
-//       .top-nav {
-//         position: absolute;
-//         top: 20px;
-//         right: 30px;
-//         display: flex;
-//         gap: 12px;
-//         z-index: 100;
-//       }
-
-//       .btn {
-//         padding: 8px 20px;
-//         border-radius: 10px;
-//         font-size: 0.85rem;
-//         font-weight: 600;
-//         cursor: pointer;
-//         transition: 0.3s ease;
-//         border: 1px solid transparent;
-//       }
-
-//       .btn-customize {
-//         background: rgba(168, 85, 247, 0.1);
-//         color: #d8b4fe;
-//         border-color: #a855f7;
-//       }
-
-//       .btn-customize:hover {
-//         background: #a855f7;
-//         color: white;
-//         box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
-//       }
-
-//       .btn-logout {
-//         background: rgba(239, 68, 68, 0.1);
-//         color: #fca5a5;
-//         border-color: #ef4444;
-//       }
-
-//       .btn-logout:hover {
-//         background: #ef4444;
-//         color: white;
-//       }
-
-//       .main-card {
-//         background: rgba(10, 15, 30, 0.7);
-//         backdrop-filter: blur(20px);
-//         -webkit-backdrop-filter: blur(20px);
-//         border: 1px solid rgba(255, 255, 255, 0.1);
-//         border-radius: 35px;
-//         padding: 40px;
-//         text-align: center;
-//         box-shadow: 0 20px 40px rgba(0,0,0,0.6);
-//         animation: float 5s ease-in-out infinite;
-//         max-width: 400px;
-//         width: 85%;
-//       }
-
-//       @keyframes float {
-//         0%, 100% { transform: translateY(0); }
-//         50% { transform: translateY(-15px); }
-//       }
-
-//       .avatar-box {
-//         width: 220px;
-//         height: 300px;
-//         margin: 0 auto 25px;
-//         border-radius: 20px;
-//         overflow: hidden;
-//         border: 2px solid rgba(0, 242, 255, 0.3);
-//         box-shadow: 0 0 20px rgba(0, 242, 255, 0.15);
-//       }
-
-//       .avatar-img {
-//         width: 100%;
-//         height: 100%;
-//         object-fit: cover;
-//         object-position: top;
-//       }
-
-//       .title {
-//         color: white;
-//         font-size: 2rem;
-//         margin: 0;
-//         font-weight: 700;
-//       }
-
-//       .highlight {
-//         color: #00f2ff;
-//         text-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
-//       }
-
-//       .subtitle {
-//         color: rgba(255, 255, 255, 0.5);
-//         font-size: 0.95rem;
-//         margin-top: 10px;
-//       }
-//     `}</style>
-
-//     <div className="top-nav">
-//       <button onClick={() => navigate("/customize")} className="btn btn-customize">Customize</button>
-//       <button onClick={handleLogout} className="btn btn-logout">Logout</button>
-//     </div>
-
-//     <div className="main-card">
-//       <div className="avatar-box">
-//         <img src={userData?.AIimg} alt="AI" className="avatar-img" />
-//       </div>
-//       <h1 className="title">
-//         Hello, I'm <span className="highlight">{userData?.Ainame}</span>
-//       </h1>
-//       <p className="subtitle">Your Intelligence Assistant</p>
-//     </div>
-//   </div>
-// );

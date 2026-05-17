@@ -87,11 +87,14 @@ const UserContext = ({ children }) => {
         {
           withCredentials: true,
           timeout: 12000,
-        }
+        },
       );
       return response.data;
     } catch (error) {
-      console.log("getGeminiResponse error:", error.response?.data || error.message);
+      console.log(
+        "getGeminiResponse error:",
+        error.response?.data || error.message,
+      );
       return null;
     }
   };
@@ -114,34 +117,29 @@ const UserContext = ({ children }) => {
 
   useEffect(() => {
     const token = document.cookie.includes("token");
+
     if (!token) {
+      // ✅ Cookie nahi — sab clear karo
       localStorage.removeItem("userData");
       setuserData(null);
       setAuthLoaded(true);
       return;
     }
 
-    const storedUser = localStorage.getItem("userData");
-    if (storedUser) {
-      try {
-        setuserData(JSON.parse(storedUser));
-      } catch (error) {
-        localStorage.removeItem("userData");
-      }
-    }
-
+    // ✅ Cookie hai — localStorage se mat lo, seedha API se lo
+    // (localStorage wali line hata do — yahi villain thi)
     handlecurrentuser()
       .catch(() => {
         setuserData(null);
+        localStorage.removeItem("userData");
       })
       .finally(() => setAuthLoaded(true));
   }, []);
-
   useEffect(() => {
     if (userData) {
       localStorage.setItem("userData", JSON.stringify(userData));
     } else {
-      localStorage.removeItem("userData");
+      localStorage.removeItem("userData"); // logout pe clear hoga
     }
   }, [userData]);
 

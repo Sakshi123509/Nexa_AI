@@ -627,7 +627,7 @@ const Customize = () => {
         formData.append("imageurl", selectedImg);
       }
       const result = await axios.post(
-        `${serverUrl}/api/user/update`,
+        `${serverUrl}/api/user/updateassistant`,
         formData,
         { withCredentials: true },
       );

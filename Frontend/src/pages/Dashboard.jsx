@@ -1,7 +1,26 @@
+// src/pages/Dashboard.jsx
+// No SpeechContext needed — reads voice settings from localStorage (same key as Home.jsx)
+
 import { useState, useEffect, useRef, useContext } from "react";
 import { UserDataContext } from "../contextAPI/Usercontext";
 import axios from "axios";
 import Navbar from "../components/Navbar";
+
+/* ── Voice settings helpers (same localStorage key as Home.jsx) ── */
+const STORAGE_KEY = "ai_voice_settings";
+
+function loadVoiceSettings() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : { language: "English", gender: "Female", volume: 1, rate: 1 };
+  } catch {
+    return { language: "English", gender: "Female", volume: 1, rate: 1 };
+  }
+}
+
+function saveVoiceSettings(settings) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+}
 
 /* ── Donut Chart ─────────────────────────────────────── */
 function DonutChart({ breakdown }) {
@@ -16,56 +35,43 @@ function DonutChart({ breakdown }) {
     const total = breakdown.reduce((a, b) => a + b.pct, 0) || 1;
     breakdown.forEach((seg) => {
       const end = angle + (seg.pct / total) * 2 * Math.PI;
-      ctx.beginPath();
-      ctx.moveTo(cx, cy);
+      ctx.beginPath(); ctx.moveTo(cx, cy);
       ctx.arc(cx, cy, r, angle, end);
-      ctx.closePath();
-      ctx.fillStyle = seg.color;
-      ctx.globalAlpha = 0.9;
-      ctx.fill();
+      ctx.closePath(); ctx.fillStyle = seg.color; ctx.globalAlpha = 0.9; ctx.fill();
       angle = end;
     });
     ctx.globalAlpha = 1;
-    ctx.beginPath();
-    ctx.arc(cx, cy, inner, 0, 2 * Math.PI);
-    const dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    ctx.fillStyle = dark ? "#151f2e" : "rgba(0,18,42,0.85)fff";
-    ctx.fill();
+    ctx.beginPath(); ctx.arc(cx, cy, inner, 0, 2 * Math.PI);
+    ctx.fillStyle = "#030f1a"; ctx.fill();
   }, [breakdown]);
   return <canvas ref={ref} width={80} height={80} style={{ flexShrink: 0 }} />;
 }
 
 /* ── Bar Chart ───────────────────────────────────────── */
 function BarChart({ data }) {
-  const max = Math.max(...data.map((d) => d.v), 1);
+  const max   = Math.max(...data.map(d => d.v), 1);
   const total = data.reduce((a, b) => a + b.v, 0);
-
-  if (total === 0) {
-    return (
-      <p style={styles.emptyChart}>No activity yet — start chatting!</p>
-    );
-  }
-
+  if (total === 0) return (
+    <p style={{ textAlign: "center", fontSize: 11, fontFamily: "monospace", color: "rgba(0,207,255,0.35)", padding: "28px 0" }}>
+      No activity yet — start chatting!
+    </p>
+  );
   return (
-    <div style={styles.barsWrap}>
+    <div style={{ display: "flex", alignItems: "flex-end", gap: 5, height: 90 }}>
       {data.map((item, i) => {
-        const pct = Math.round((item.v / max) * 100);
+        const pct   = Math.round((item.v / max) * 100);
         const isMax = item.v === max && item.v > 0;
         return (
-          <div key={i} style={styles.barCol}>
-            <span style={{ ...styles.barCount, color: isMax ? "#1a6cff" : "var(--ink4)" }}>
+          <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, height: "100%", justifyContent: "flex-end" }}>
+            <span style={{ fontSize: 9, fontFamily: "monospace", color: isMax ? "#00cfff" : "rgba(0,207,255,0.3)" }}>
               {item.v > 0 ? item.v : ""}
             </span>
-            <div
-              style={{
-                ...styles.bar,
-                height: `${Math.max(pct, item.v > 0 ? 5 : 0)}%`,
-                background: isMax
-                  ? "linear-gradient(180deg,#1a6cff,#60a5fa66)"
-                  : "rgba(26,108,255,0.2)",
-              }}
-            />
-            <span style={styles.barLabel}>{item.d}</span>
+            <div style={{
+              width: "100%", borderRadius: "3px 3px 0 0", transition: "height .5s ease", minHeight: 3,
+              height: `${Math.max(pct, item.v > 0 ? 5 : 0)}%`,
+              background: isMax ? "linear-gradient(180deg,#00cfff,rgba(0,207,255,0.3))" : "rgba(0,207,255,0.15)",
+            }} />
+            <span style={{ fontSize: 9, fontFamily: "monospace", color: "rgba(0,207,255,0.3)" }}>{item.d}</span>
           </div>
         );
       })}
@@ -76,583 +82,178 @@ function BarChart({ data }) {
 /* ── Time ago ────────────────────────────────────────── */
 function timeAgo(dateStr) {
   const m = Math.floor((Date.now() - new Date(dateStr).getTime()) / 60000);
-  if (m < 1) return "just now";
+  if (m < 1)  return "just now";
   if (m < 60) return `${m}m ago`;
   const h = Math.floor(m / 60);
   if (h < 24) return `${h}h ago`;
   return `${Math.floor(h / 24)}d ago`;
 }
 
-/* ── CSS-in-JS styles ────────────────────────────────── */
-const styles = {
-  root: {
-    display: "flex",
-    height: "100vh",
-    background: "var(--bg)",
-    fontFamily: "'Space Grotesk', 'Segoe UI', system-ui, sans-serif",
-  },
-  main: {
-    marginLeft: 224,
-    flex: 1,
-    overflowY: "auto",
-    padding: "20px",
-    display: "flex",
-    flexDirection: "column",
-    gap: 16,
-    scrollbarWidth: "thin",
-  },
-  header: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 12,
-  },
-  h1: {
-    fontSize: 20,
-    fontWeight: 600,
-    letterSpacing: "-0.3px",
-    color: " var(--text-primary)",
-    margin: 0,
-  },
-  headerSub: {
-    fontSize: 12,
-    color: "var(--ink3, #4a5868)",
-    marginTop: 3,
-    fontFamily: "monospace",
-  },
-  headerRight: { display: "flex", alignItems: "center", gap: 8 },
-  statusPill: {
-    display: "flex",
-    alignItems: "center",
-    gap: 7,
-    background: "rgba(0,18,42,0.7)",
-    border: "1px solid rgba(0,0,0,0.07)",
-    borderRadius: 999,
-    padding: "6px 14px",
-    fontSize: 12,
-    fontFamily: "monospace",
-    color: "var(--ink2, #2d3a47)",
-    boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
-  },
-  dot: {
-    width: 7,
-    height: 7,
-    borderRadius: "50%",
-    background: "#00c896",
-    animation: "breathe 2.2s ease-in-out infinite",
-  },
-  timeBadge: {
-    fontSize: 12,
-    fontFamily: "monospace",
-    color: "var(--ink3, #4a5868)",
-    padding: "6px 10px",
-    background: "rgba(0,18,42,0.85)",
-    border: "1px solid rgba(0,0,0,0.07)",
-    borderRadius: 8,
-    boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
-  },
+/* ── Constants ───────────────────────────────────────── */
+const C = {
+  bg:     "#030f1a",
+  card:   "rgba(0,18,42,0.85)",
+  border: "rgba(0,229,255,0.1)",
+  accent: "#00cfff",
+  text:   "#e0f4ff",
+  muted:  "rgba(0,207,255,0.35)",
+  mono:   "monospace",
+};
 
-  // Metric cards
-  metricsGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(4, 1fr)",
-    gap: 12,
-  },
-  metricCard: (accentBar, accentClr) => ({
-    background: "rgba(0,18,42,0.85)",
-    border: "1px solid rgba(0,0,0,0.07)",
-    borderRadius: 12,
-    padding: "16px 18px",
-    boxShadow: "0 1px 3px rgba(0,0,0,0.06),0 4px 16px rgba(0,0,0,0.04)",
-    position: "relative",
-    overflow: "hidden",
-    cursor: "default",
-    transition: "transform .15s, box-shadow .15s",
-  }),
-  metricBar: (gradient) => ({
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 3,
-    background: gradient,
-    borderRadius: "3px 3px 0 0",
-  }),
-  metricLabel: {
-    fontSize: 11,
-    fontFamily: "monospace",
-    color: "var(--accent)",
-    letterSpacing: "0.5px",
-    textTransform: "uppercase",
-    marginBottom: 10,
-  },
-  metricValue: (color) => ({
-    fontSize: 28,
-    fontWeight: 600,
-    lineHeight: 1,
-    color: color,
-    margin: 0,
-  }),
-  metricSub: {
-    fontSize: 11,
-    color: "var(--ink4, #8a98a8)",
-    marginTop: 6,
-    fontFamily: "monospace",
-  },
-
-  // Cards
-  card: {
-    background: "rgba(0,18,42,0.85)",
-    border: "1px solid rgba(0,0,0,0.07)",
-    borderRadius: 12,
-    padding: 18,
-    boxShadow: "0 1px 3px rgba(0,0,0,0.06),0 4px 16px rgba(0,0,0,0.04)",
-  },
-  cardTitle: {
-    fontSize: 11,
-    fontFamily: "monospace",
-    color: "var(--ink3, #4a5868)",
-    textTransform: "uppercase",
-    letterSpacing: "0.5px",
-    marginBottom: 14,
-  },
-  cardTitleRow: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 14,
-  },
-
-  // Mid row
-  midRow: {
-    display: "grid",
-    gridTemplateColumns: "1.6fr 1fr 1fr",
-    gap: 12,
-  },
-
-  // Bar chart
-  barsWrap: {
-    display: "flex",
-    alignItems: "flex-end",
-    gap: 5,
-    height: 90,
-  },
-  barCol: {
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: 4,
-    height: "100%",
-    justifyContent: "flex-end",
-  },
-  bar: {
-    width: "100%",
-    borderRadius: "4px 4px 0 0",
-    transition: "height .5s ease",
-    minHeight: 3,
-  },
-  barCount: {
-    fontSize: 9,
-    fontFamily: "monospace",
-  },
-  barLabel: {
-    fontSize: 10,
-    fontFamily: "monospace",
-    color: "var(--ink4, #8a98a8)",
-  },
-  emptyChart: {
-    textAlign: "center",
-    fontSize: 12,
-    fontFamily: "monospace",
-    color: "var(--ink4, #8a98a8)",
-    padding: "28px 0",
-  },
-
-  // Toggle group
-  toggleGroup: {
-    display: "flex",
-    background: "var(--surface, #f4f6f8)",
-    border: "1px solid rgba(0,0,0,0.07)",
-    borderRadius: 7,
-    overflow: "hidden",
-  },
-  toggleBtn: (active) => ({
-    padding: "4px 10px",
-    fontSize: 10,
-    fontFamily: "monospace",
-    cursor: "pointer",
-    color: active ? "var(--accent)" : "var(--ink3, #4a5868)",
-    border: "none",
-    background: active ? "rgba(0,18,42,0.85)" : "transparent",
-    boxShadow: active ? "0 1px 3px rgba(0,0,0,0.07)" : "none",
-    letterSpacing: "0.3px",
-    transition: "all .15s",
-  }),
-
-  // Donut
-  donutWrap: { display: "flex", alignItems: "center", gap: 14 },
-  legend: { display: "flex", flexDirection: "column", gap: 8, flex: 1 },
-  legendItem: { display: "flex", alignItems: "center", gap: 8 },
-  legendDot: (color) => ({
-    width: 8,
-    height: 8,
-    borderRadius: 3,
-    background: color,
-    flexShrink: 0,
-  }),
-  legendPct: (color) => ({
-    fontFamily: "monospace",
-    fontSize: 12,
-    color: color,
-    marginLeft: "auto",
-  }),
-
-  // Assistant
-  aiAvatarWrap: {
-    width: 52,
-    height: 52,
-    borderRadius: "50%",
-    border: "2px solid #1a6cff",
-    overflow: "hidden",
-    marginBottom: 12,
-    background: "linear-gradient(135deg,#1a6cff22,#00c89622)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: 22,
-  },
-  aiName: {
-    fontSize: 16,
-    fontWeight: 600,
-    marginBottom: 4,
-    color: "var(--ink, #0f1923)",
-  },
-  aiStatus: {
-    display: "flex",
-    alignItems: "center",
-    gap: 6,
-    fontSize: 12,
-    color: "#00a876",
-    marginBottom: 8,
-    fontFamily: "monospace",
-  },
-  tag: (bg, color) => ({
-    display: "inline-block",
-    fontSize: 10,
-    fontFamily: "monospace",
-    padding: "3px 8px",
-    borderRadius: 6,
-    marginRight: 5,
-    marginTop: 4,
-    background: bg,
-    color: color,
-  }),
-
-  // Bottom row
-  bottomRow: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: 12,
-  },
-
-  // Activity
-  actItem: {
-    display: "flex",
-    alignItems: "center",
-    gap: 10,
-    padding: "10px 0",
-    borderBottom: "1px solid rgba(0,0,0,0.06)",
-  },
-  actIcon: (color) => ({
-    width: 32,
-    height: 32,
-    borderRadius: 9,
-    flexShrink: 0,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: 15,
-    background: color + "18",
-  }),
-  actMain: {
-    fontSize: 13,
-    color: "",
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    margin: 0,
-  },
-  actMeta: {
-    fontSize: 11,
-    fontFamily: "monospace",
-    color: "var(--ink4, #8a98a8)",
-    marginTop: 2,
-  },
-  emptyState: {
-    textAlign: "center",
-    padding: "28px 0",
-    fontSize: 12,
-    fontFamily: "monospace",
-    color: "var(--ink4, #8a98a8)",
-  },
-
-  // System status
-  sysItem: { marginBottom: 14 },
-  sysRow: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 6,
-  },
-  sysName: {
-    fontSize: 12,
-    fontFamily: "monospace",
-    color: "var(--ink2, #2d3a47)",
-  },
-  track: {
-    height: 4,
-    background: "rgba(0,0,0,0.07)",
-    borderRadius: 2,
-    overflow: "hidden",
-  },
-  fill: (w, color) => ({
-    height: "100%",
-    width: `${w}%`,
-    borderRadius: 2,
-    background: color,
-    transition: "width .7s ease",
-  }),
-
-  // Voice config
-  configRow: { marginBottom: 12 },
-  configLabel: {
-    fontSize: 11,
-    fontFamily: "monospace",
-    color: "var(--ink3, #4a5868)",
-    textTransform: "uppercase",
-    letterSpacing: "0.4px",
-    marginBottom: 6,
-    display: "flex",
-    justifyContent: "space-between",
-  },
-  configSelect: {
-    width: "100%",
-    padding: "8px 10px",
-    background: "var(--surface, #f4f6f8)",
-    border: "1px solid rgba(0,0,0,0.09)",
-    borderRadius: 8,
-    color: "var(--ink, #0f1923)",
-    fontSize: 13,
-    outline: "none",
-    cursor: "pointer",
-    fontFamily: "'Space Grotesk', system-ui, sans-serif",
-  },
-  rangeWrap: { display: "flex", alignItems: "center", gap: 10 },
-  rangeHint: {
-    fontSize: 10,
-    color: "var(--ink4, #8a98a8)",
-    fontFamily: "monospace",
-  },
-  rangeVal: {
-    fontSize: 11,
-    fontFamily: "monospace",
-    color: "#1a6cff",
-    minWidth: 28,
-    textAlign: "right",
-  },
+const card = {
+  background: C.card,
+  border: `1px solid ${C.border}`,
+  borderRadius: 12,
+  padding: 16,
+  boxShadow: "0 4px 24px rgba(0,0,0,0.3)",
 };
 
 const METRIC_CONFIGS = [
-  {
-    key: "totalQueries",
-    label: "Total queries",
-    sub: "all time",
-    bar: "linear-gradient(90deg,#1a6cff,#60a5fa)",
-    color: "#1a6cff",
-    format: (v) => String(v || 0),
-  },
-  {
-    key: "voiceCount",
-    label: "Voice commands",
-    sub: "via microphone",
-    bar: "linear-gradient(90deg,#00c896,#34d399)",
-    color: "#00a876",
-    format: (v) => String(v || 0),
-  },
-  {
-    key: "chatCount",
-    label: "Chat messages",
-    sub: "typed messages",
-    bar: "linear-gradient(90deg,#f59e0b,#fcd34d)",
-    color: "#d97706",
-    format: (v) => String(v || 0),
-  },
-  {
-    key: "memberSince",
-    label: "Member since",
-    sub: "account age",
-    bar: "linear-gradient(90deg,#e040fb,#c084fc)",
-    color: "#c026d3",
-    format: (v) =>
-      v
-        ? new Date(v).toLocaleDateString("en", { month: "short", year: "numeric" })
-        : "—",
-    smallValue: true,
-  },
+  { key: "totalQueries", label: "Total queries",  sub: "all time",       bar: "linear-gradient(90deg,#00cfff,#60a5fa)", color: "#00cfff", format: v => String(v || 0) },
+  { key: "voiceCount",   label: "Voice commands", sub: "via microphone", bar: "linear-gradient(90deg,#5aefb8,#34d399)", color: "#5aefb8", format: v => String(v || 0) },
+  { key: "chatCount",    label: "Chat messages",  sub: "typed messages", bar: "linear-gradient(90deg,#f0a060,#fcd34d)", color: "#f0a060", format: v => String(v || 0) },
+  { key: "memberSince",  label: "Member since",   sub: "account age",    bar: "linear-gradient(90deg,#c47fff,#e040fb)", color: "#c47fff",
+    format: v => v ? new Date(v).toLocaleDateString("en", { month: "short", year: "numeric" }) : "—", small: true },
 ];
 
-const SYSTEM_ITEMS = (stats) => [
-  { name: "Core engine", pct: 82, badge: "ONLINE", badgeType: "green", color: "#1a6cff" },
-  { name: "Voice module", pct: 95, badge: "ACTIVE", badgeType: "green", color: "#00c896" },
-  {
-    name: "Memory bank",
-    pct: stats ? Math.min(Math.round((stats.totalQueries / 200) * 100), 100) : 0,
-    badge: stats ? `${Math.min(Math.round((stats.totalQueries / 200) * 100), 100)}% used` : "0%",
-    badgeType: "amber",
-    color: "#f59e0b",
-  },
-  { name: "API latency", pct: 22, badge: "~0.8s", badgeType: "blue", color: "#1a6cff" },
-];
-
-const BADGE_STYLES = {
-  green: { background: "rgba(0,200,150,.12)", color: "#00a876" },
-  amber: { background: "rgba(245,158,11,.12)", color: "#b97a00" },
-  blue: { background: "rgba(26,108,255,.12)", color: "#1a6cff" },
+const BADGE = {
+  green: { background: "rgba(90,239,184,.15)",  color: "#5aefb8" },
+  amber: { background: "rgba(240,160,96,.15)",  color: "#f0a060" },
+  blue:  { background: "rgba(0,207,255,.15)",   color: "#00cfff" },
 };
 
 /* ── Dashboard ───────────────────────────────────────── */
 const Dashboard = () => {
   const { userData, serverUrl } = useContext(UserDataContext);
-  const [chartRange, setChartRange] = useState("week");
-  const [liveTime, setLiveTime] = useState(new Date().toLocaleTimeString("en", { hour12: false }));
-  const [voiceQuality, setVoiceQuality] = useState(90);
-  const [aiCreativity, setAiCreativity] = useState(75);
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
-  // Clock
+  // ✅ Voice settings from localStorage — same key Home.jsx uses
+  const [voiceSettings, setVoiceSettingsState] = useState(loadVoiceSettings);
+
+  const setVoiceSettings = (updater) => {
+    setVoiceSettingsState(prev => {
+      const next = typeof updater === "function" ? updater(prev) : { ...prev, ...updater };
+      saveVoiceSettings(next);
+      return next;
+    });
+  };
+
+  const [chartRange, setChartRange] = useState("week");
+  const [liveTime,   setLiveTime]   = useState(new Date().toLocaleTimeString("en", { hour12: false }));
+  const [stats,      setStats]      = useState(null);
+  const [loading,    setLoading]    = useState(true);
+
+  // Live clock
   useEffect(() => {
-    const id = setInterval(
-      () => setLiveTime(new Date().toLocaleTimeString("en", { hour12: false })),
-      1000
-    );
+    const id = setInterval(() => setLiveTime(new Date().toLocaleTimeString("en", { hour12: false })), 1000);
     return () => clearInterval(id);
   }, []);
 
-  // Inject keyframes once
+  // Inject fonts
   useEffect(() => {
     const id = "dash-kf";
     if (!document.getElementById(id)) {
       const s = document.createElement("style");
       s.id = id;
       s.textContent = `
-        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
-        @keyframes breathe{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.75)}}
-        [data-dash] input[type=range]{accent-color:#1a6cff}
-        [data-dash] select:focus{outline:2px solid #1a6cff44;outline-offset:2px}
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Space+Grotesk:wght@400;500;600&display=swap');
+        @keyframes breathe{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
       `;
       document.head.appendChild(s);
     }
   }, []);
 
-  // Fetch dashboard data
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const res = await axios.get(`${serverUrl}/api/user/dashboardstats`, {
-          withCredentials: true,
-        });
-        setStats(res.data);
-      } catch (e) {
-        setError("Could not load stats");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [serverUrl]);
+  // Fetch stats
+  const fetchStats = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(`${serverUrl}/api/user/dashboardstats`, { withCredentials: true });
+      setStats(res.data);
+    } catch (err) {
+      console.log("dashboardstats error:", err.response?.data || err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const weekData =
-    stats?.weekData ||
-    ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"].map((d) => ({ d, v: 0 }));
-  const monthData = stats?.monthData || [
-    { d: "W1", v: 0 },
-    { d: "W2", v: 0 },
-    { d: "W3", v: 0 },
-    { d: "W4", v: 0 },
+  useEffect(() => { fetchStats(); }, [serverUrl]);
+
+  const weekData  = stats?.weekData       || ["MON","TUE","WED","THU","FRI","SAT","SUN"].map(d => ({ d, v: 0 }));
+  const monthData = stats?.monthData      || [{ d:"W1",v:0 },{ d:"W2",v:0 },{ d:"W3",v:0 },{ d:"W4",v:0 }];
+  const breakdown = stats?.breakdown      || [{ label:"VOICE", pct:0.5, color:"#00cfff" },{ label:"CHAT", pct:0.5, color:"#5aefb8" }];
+  const activity  = stats?.recentActivity || [];
+
+  const sysItems = [
+    { name: "Core engine",  pct: 82,  badge: "ONLINE",  type: "green", color: "#00cfff" },
+    { name: "Voice module", pct: 95,  badge: "ACTIVE",  type: "green", color: "#5aefb8" },
+    { name: "Memory bank",
+      pct:   stats ? Math.min(Math.round((stats.totalQueries / 200) * 100), 100) : 0,
+      badge: stats ? `${Math.min(Math.round((stats.totalQueries / 200) * 100), 100)}% used` : "0%",
+      type: "amber", color: "#f0a060" },
+    { name: "API latency",  pct: 22,  badge: "~0.8s",   type: "blue",  color: "#00cfff" },
   ];
-  const breakdown = stats?.breakdown || [
-    { label: "VOICE", pct: 0.5, color: "#1a6cff" },
-    { label: "CHAT", pct: 0.5, color: "#00c896" },
-  ];
-  const activity = stats?.recentActivity || [];
-  const sysItems = SYSTEM_ITEMS(stats);
+
+  // Slider display values
+  const volPct  = Math.round(voiceSettings.volume * 100);
+  const ratePct = Math.round(((voiceSettings.rate - 0.5) / 1.5) * 100);
 
   return (
-    <div style={styles.root} data-dash>
+    <div style={{ display:"flex", height:"100vh", background: C.bg, fontFamily:"'Space Grotesk','Segoe UI',system-ui,sans-serif" }}>
       <Navbar />
-      <div style={styles.main}>
+
+      {/* Grid background */}
+      <div style={{ position:"fixed", inset:0, backgroundImage:"linear-gradient(rgba(0,207,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,207,255,0.025) 1px,transparent 1px)", backgroundSize:"40px 40px", pointerEvents:"none", zIndex:0 }} />
+
+      <div style={{ marginLeft:224, flex:1, overflowY:"auto", padding:20, display:"flex", flexDirection:"column", gap:14, position:"relative", zIndex:1, scrollbarWidth:"thin", scrollbarColor:"rgba(0,207,255,0.2) transparent" }}>
 
         {/* ── Header ── */}
-        <div style={styles.header}>
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
           <div>
-            <h1 style={styles.h1}>
+            <p style={{ fontSize:9, fontFamily:C.mono, color:C.muted, letterSpacing:3, marginBottom:4 }}>// DASHBOARD</p>
+            <h1 style={{ fontFamily:"'Orbitron',monospace", fontSize:"clamp(13px,2.2vw,17px)", fontWeight:700, color:C.text, letterSpacing:3, margin:0 }}>
               {userData?.name?.toUpperCase() || "USER"}_OVERVIEW
             </h1>
-            <p style={styles.headerSub}>// dashboard · neural assistant v2.4</p>
           </div>
-          <div style={styles.headerRight}>
-            {loading && (
-              <span style={{ fontSize: 11, fontFamily: "monospace", color: "#8a98a8" }}>
-                LOADING...
-              </span>
-            )}
-            <div style={styles.statusPill}>
-              <div style={styles.dot} />
-              LIVE
+          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+            <button onClick={fetchStats} style={{ background:"rgba(0,207,255,0.08)", border:`1px solid ${C.border}`, borderRadius:8, padding:"5px 12px", color:C.accent, fontFamily:C.mono, fontSize:10, cursor:"pointer" }}>
+              ↻ REFRESH
+            </button>
+            {loading && <span style={{ fontSize:9, fontFamily:C.mono, color:C.muted }}>LOADING...</span>}
+            <div style={{ display:"flex", alignItems:"center", gap:6, background:"rgba(0,207,255,0.06)", border:`1px solid rgba(0,229,255,0.15)`, borderRadius:999, padding:"5px 12px" }}>
+              <div style={{ width:6, height:6, borderRadius:"50%", background:C.accent, animation:"breathe 2.2s ease-in-out infinite" }} />
+              <span style={{ fontFamily:C.mono, fontSize:9, color:C.accent }}>LIVE</span>
             </div>
-            <div style={styles.timeBadge}>{liveTime}</div>
+            <span style={{ fontFamily:C.mono, fontSize:11, color:C.muted, padding:"6px 10px", background:C.card, border:`1px solid ${C.border}`, borderRadius:8 }}>{liveTime}</span>
           </div>
         </div>
 
         {/* ── Metric Cards ── */}
-        <div style={styles.metricsGrid}>
-          {METRIC_CONFIGS.map((m) => (
-            <div key={m.key} style={styles.metricCard(m.bar, m.color)}>
-              <div style={styles.metricBar(m.bar)} />
-              <p style={styles.metricLabel}>{m.label}</p>
-              <p
-                style={{
-                  ...styles.metricValue(m.color),
-                  fontSize: m.smallValue ? 18 : 28,
-                  paddingTop: m.smallValue ? 4 : 0,
-                }}
-              >
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12 }}>
+          {METRIC_CONFIGS.map(m => (
+            <div key={m.key} style={{ ...card, overflow:"hidden", position:"relative" }}>
+              <div style={{ position:"absolute", top:0, left:0, right:0, height:2, background:m.bar }} />
+              <p style={{ fontSize:8, fontFamily:C.mono, color:C.muted, letterSpacing:2, textTransform:"uppercase", marginBottom:8 }}>{m.label}</p>
+              <p style={{ fontFamily:"'Orbitron',monospace", fontSize: m.small ? 18 : 26, fontWeight:600, color:m.color, margin:0, paddingTop: m.small ? 3 : 0 }}>
                 {loading ? "—" : m.format(stats?.[m.key])}
               </p>
-              <p style={styles.metricSub}>{m.sub}</p>
+              <p style={{ fontSize:10, color:C.muted, marginTop:5, fontFamily:C.mono }}>{m.sub}</p>
             </div>
           ))}
         </div>
 
-        {/* ── Mid Row: Bar chart + Donut + Assistant ── */}
-        <div style={styles.midRow}>
+        {/* ── Mid row ── */}
+        <div style={{ display:"grid", gridTemplateColumns:"1.6fr 1fr 1fr", gap:12 }}>
 
           {/* Bar chart */}
-          <div style={styles.card}>
-            <div style={styles.cardTitleRow}>
-              <span style={{ ...styles.cardTitle, marginBottom: 0 }}>Queries per day</span>
-              <div style={styles.toggleGroup}>
-                {["week", "month"].map((r) => (
-                  <button
-                    key={r}
-                    style={styles.toggleBtn(chartRange === r)}
-                    onClick={() => setChartRange(r)}
-                  >
-                    {r === "week" ? "Week" : "Month"}
+          <div style={card}>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
+              <span style={{ fontSize:8, fontFamily:C.mono, color:C.muted, letterSpacing:2, textTransform:"uppercase" }}>Queries per day</span>
+              <div style={{ display:"flex", background:"rgba(0,0,0,0.3)", border:`1px solid ${C.border}`, borderRadius:6, overflow:"hidden" }}>
+                {["week","month"].map(r => (
+                  <button key={r} onClick={() => setChartRange(r)}
+                    style={{ padding:"4px 10px", fontSize:9, fontFamily:C.mono, cursor:"pointer", border:"none", transition:"all .15s",
+                      color: chartRange===r ? C.accent : C.muted,
+                      background: chartRange===r ? "rgba(0,207,255,0.1)" : "transparent" }}>
+                    {r === "week" ? "WEEK" : "MONTH"}
                   </button>
                 ))}
               </div>
@@ -661,195 +262,148 @@ const Dashboard = () => {
           </div>
 
           {/* Donut */}
-          <div style={styles.card}>
-            <p style={styles.cardTitle}>Query breakdown</p>
-            <div style={styles.donutWrap}>
+          <div style={card}>
+            <p style={{ fontSize:8, fontFamily:C.mono, color:C.muted, letterSpacing:2, textTransform:"uppercase", marginBottom:14 }}>Query breakdown</p>
+            <div style={{ display:"flex", alignItems:"center", gap:14 }}>
               <DonutChart breakdown={breakdown} />
-              <div style={styles.legend}>
-                {breakdown.map((b) => (
-                  <div key={b.label} style={styles.legendItem}>
-                    <div style={styles.legendDot(b.color)} />
-                    <span style={{ fontSize: 12, fontFamily: "monospace", color: "#4a5868" }}>
-                      {b.label}
-                    </span>
-                    <span style={styles.legendPct(b.color)}>
-                      {Math.round(b.pct * 100)}%
-                    </span>
+              <div style={{ display:"flex", flexDirection:"column", gap:10, flex:1 }}>
+                {breakdown.map(b => (
+                  <div key={b.label} style={{ display:"flex", alignItems:"center", gap:8 }}>
+                    <div style={{ width:8, height:8, borderRadius:2, background:b.color, flexShrink:0 }} />
+                    <span style={{ fontSize:10, fontFamily:C.mono, color:C.muted, flex:1 }}>{b.label}</span>
+                    <span style={{ fontFamily:C.mono, fontSize:11, color:b.color }}>{Math.round(b.pct * 100)}%</span>
                   </div>
                 ))}
               </div>
             </div>
           </div>
 
-          {/* Assistant Profile */}
-          <div style={{ ...styles.card, display: "flex", flexDirection: "column" }}>
-            <p style={styles.cardTitle}>AI assistant</p>
-            <div
-              style={{
-                flex: 1,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                textAlign: "center",
-                justifyContent: "center",
-                padding: "8px 0",
-              }}
-            >
-              <div style={styles.aiAvatarWrap}>
-                {userData?.AIimg ? (
-                  <img
-                    src={userData.AIimg}
-                    alt=""
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  />
-                ) : (
-                  "🤖"
-                )}
+          {/* Assistant profile */}
+          <div style={{ ...card, display:"flex", flexDirection:"column" }}>
+            <p style={{ fontSize:8, fontFamily:C.mono, color:C.muted, letterSpacing:2, textTransform:"uppercase", marginBottom:12 }}>AI assistant</p>
+            <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", textAlign:"center", justifyContent:"center" }}>
+              <div style={{ width:54, height:54, borderRadius:"50%", border:"2px solid #00cfff", overflow:"hidden", marginBottom:10, background:"rgba(0,207,255,0.08)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:22 }}>
+                {userData?.AIimg
+                  ? <img src={userData.AIimg} alt="" style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+                  : "🤖"}
               </div>
-              <div style={styles.aiName}>{userData?.Ainame || "ARIA"}</div>
-              <div style={styles.aiStatus}>
-                <div style={{ ...styles.dot, background: "#00c896" }} />
-                Online
+              <div style={{ fontSize:14, fontWeight:600, color:C.text, fontFamily:"'Orbitron',monospace", marginBottom:4 }}>{userData?.Ainame || "ARIA"}</div>
+              <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:11, color:"#5aefb8", marginBottom:8, fontFamily:C.mono }}>
+                <div style={{ width:5, height:5, borderRadius:"50%", background:"#5aefb8" }} /> Online
               </div>
               <div>
-                <span style={styles.tag("rgba(26,108,255,.1)", "#1a6cff")}>
-                  Fast response
-                </span>
-                <span style={styles.tag("rgba(0,200,150,.1)", "#00a876")}>
-                  Voice enabled
-                </span>
+                <span style={{ fontSize:9, fontFamily:C.mono, padding:"3px 8px", borderRadius:6, background:"rgba(0,207,255,0.1)", color:"#00cfff", marginRight:4 }}>Fast response</span>
+                <span style={{ fontSize:9, fontFamily:C.mono, padding:"3px 8px", borderRadius:6, background:"rgba(90,239,184,0.1)", color:"#5aefb8" }}>Voice enabled</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* ── Bottom Row ── */}
-        <div style={styles.bottomRow}>
+        {/* ── Bottom row ── */}
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
 
-          {/* Recent Activity */}
-          <div style={styles.card}>
-            <p style={styles.cardTitle}>Recent activity</p>
-            <div>
-              {loading ? (
-                <div style={styles.emptyState}>Loading activity...</div>
-              ) : activity.length === 0 ? (
-                <div style={styles.emptyState}>
-                  No activity yet — start chatting!
-                </div>
-              ) : (
-                activity.map((a, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      ...styles.actItem,
-                      ...(i === activity.length - 1 ? { borderBottom: "none" } : {}),
-                    }}
-                  >
-                    <div style={styles.actIcon(a.color)}>{a.icon}</div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={styles.actMain}>{a.label}</p>
-                      <p style={styles.actMeta}>
-                        {a.type} · {timeAgo(a.time)}
-                      </p>
+          {/* Recent activity */}
+          <div style={card}>
+            <p style={{ fontSize:8, fontFamily:C.mono, color:C.muted, letterSpacing:2, textTransform:"uppercase", marginBottom:12 }}>Recent activity</p>
+            {loading ? (
+              <p style={{ fontSize:10, fontFamily:C.mono, color:C.muted, textAlign:"center", padding:"20px 0" }}>Loading activity...</p>
+            ) : activity.length === 0 ? (
+              <p style={{ fontSize:10, fontFamily:C.mono, color:C.muted, textAlign:"center", padding:"20px 0" }}>No activity yet — start chatting!</p>
+            ) : (
+              <div style={{ display:"flex", flexDirection:"column" }}>
+                {activity.map((a, i) => (
+                  <div key={i} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 0", borderBottom: i < activity.length-1 ? `1px solid rgba(0,229,255,0.06)` : "none" }}>
+                    <div style={{ width:30, height:30, borderRadius:7, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, background: a.color + "18" }}>{a.icon}</div>
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <p style={{ fontSize:12, color:"#c8e8f0", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", margin:0 }}>{a.label}</p>
+                      <p style={{ fontSize:9, fontFamily:C.mono, color: a.color + "80", marginTop:2 }}>{a.type} · {timeAgo(a.time)}</p>
                     </div>
                   </div>
-                ))
-              )}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Right column */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
 
-            {/* System Status */}
-            <div style={styles.card}>
-              <p style={styles.cardTitle}>System status</p>
+            {/* System status */}
+            <div style={card}>
+              <p style={{ fontSize:8, fontFamily:C.mono, color:C.muted, letterSpacing:2, textTransform:"uppercase", marginBottom:12 }}>System status</p>
               {sysItems.map((sys, i) => (
-                <div
-                  key={sys.name}
-                  style={{ ...styles.sysItem, ...(i === sysItems.length - 1 ? { marginBottom: 0 } : {}) }}
-                >
-                  <div style={styles.sysRow}>
-                    <span style={styles.sysName}>{sys.name}</span>
-                    <span
-                      style={{
-                        fontSize: 10,
-                        fontFamily: "monospace",
-                        padding: "2px 7px",
-                        borderRadius: 5,
-                        ...BADGE_STYLES[sys.badgeType],
-                      }}
-                    >
-                      {sys.badge}
-                    </span>
+                <div key={sys.name} style={{ marginBottom: i < sysItems.length-1 ? 12 : 0 }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:5 }}>
+                    <span style={{ fontSize:10, fontFamily:C.mono, color:"rgba(0,207,255,0.5)" }}>{sys.name}</span>
+                    <span style={{ fontSize:9, fontFamily:C.mono, padding:"2px 7px", borderRadius:5, ...BADGE[sys.type] }}>{sys.badge}</span>
                   </div>
-                  <div style={styles.track}>
-                    <div style={styles.fill(sys.pct, sys.color)} />
+                  <div style={{ height:3, background:"rgba(0,229,255,0.08)", borderRadius:2, overflow:"hidden" }}>
+                    <div style={{ height:"100%", width:`${sys.pct}%`, background:sys.color, borderRadius:2, transition:"width .7s ease" }} />
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* Voice Configuration */}
-            <div style={styles.card}>
-              <p style={styles.cardTitle}>Voice configuration</p>
-              <div style={styles.configRow}>
-                <div style={styles.configLabel}>Voice type</div>
-                <select style={styles.configSelect}>
+            {/* ✅ Voice config — reads/writes same localStorage as Home.jsx */}
+            <div style={card}>
+              <p style={{ fontSize:8, fontFamily:C.mono, color:C.muted, letterSpacing:2, textTransform:"uppercase", marginBottom:14 }}>Voice configuration</p>
+
+              {/* Gender */}
+              <div style={{ marginBottom:12 }}>
+                <p style={{ fontSize:9, fontFamily:C.mono, color:C.muted, textTransform:"uppercase", letterSpacing:"1px", marginBottom:6 }}>Voice type</p>
+                <select value={voiceSettings.gender}
+                  onChange={e => setVoiceSettings(s => ({ ...s, gender: e.target.value }))}
+                  style={{ width:"100%", padding:"8px 10px", background:"rgba(0,0,0,0.4)", border:`1px solid ${C.border}`, borderRadius:8, color:C.text, fontSize:12, outline:"none", cursor:"pointer" }}>
                   <option>Female</option>
                   <option>Male</option>
                 </select>
               </div>
-              <div style={styles.configRow}>
-                <div style={styles.configLabel}>Language</div>
-                <select style={styles.configSelect}>
+
+              {/* Language */}
+              <div style={{ marginBottom:12 }}>
+                <p style={{ fontSize:9, fontFamily:C.mono, color:C.muted, textTransform:"uppercase", letterSpacing:"1px", marginBottom:6 }}>Language</p>
+                <select value={voiceSettings.language}
+                  onChange={e => setVoiceSettings(s => ({ ...s, language: e.target.value }))}
+                  style={{ width:"100%", padding:"8px 10px", background:"rgba(0,0,0,0.4)", border:`1px solid ${C.border}`, borderRadius:8, color:C.text, fontSize:12, outline:"none", cursor:"pointer" }}>
                   <option>English</option>
                   <option>Hindi</option>
                   <option>Marathi</option>
                 </select>
               </div>
-              <div style={styles.configRow}>
-                <div style={styles.configLabel}>
-                  <span>Voice quality</span>
-                  <span style={styles.rangeVal}>{voiceQuality}</span>
-                </div>
-                <div style={styles.rangeWrap}>
-                  <span style={styles.rangeHint}>LOW</span>
-                  <input
-                    type="range"
-                    min="1"
-                    max="100"
-                    step="1"
-                    value={voiceQuality}
-                    onChange={(e) => setVoiceQuality(Number(e.target.value))}
-                    style={{ flex: 1, accentColor: "#1a6cff" }}
-                  />
-                  <span style={styles.rangeHint}>HD</span>
-                </div>
-              </div>
-              <div style={{ ...styles.configRow, marginBottom: 0 }}>
-                <div style={styles.configLabel}>
-                  <span>AI creativity</span>
-                  <span style={styles.rangeVal}>{aiCreativity}</span>
-                </div>
-                <div style={styles.rangeWrap}>
-                  <span style={styles.rangeHint}>LOW</span>
-                  <input
-                    type="range"
-                    min="1"
-                    max="100"
-                    step="1"
-                    value={aiCreativity}
-                    onChange={(e) => setAiCreativity(Number(e.target.value))}
-                    style={{ flex: 1, accentColor: "#1a6cff" }}
-                  />
-                  <span style={styles.rangeHint}>HIGH</span>
-                </div>
-              </div>
-            </div>
 
+              {/* Volume */}
+              <div style={{ marginBottom:12 }}>
+                <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
+                  <p style={{ fontSize:9, fontFamily:C.mono, color:C.muted, textTransform:"uppercase", letterSpacing:"1px", margin:0 }}>Volume</p>
+                  <span style={{ fontSize:10, fontFamily:C.mono, color:C.accent }}>{volPct}%</span>
+                </div>
+                <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                  <span style={{ fontSize:9, fontFamily:C.mono, color:C.muted }}>0</span>
+                  <input type="range" min="0" max="100" step="1" value={volPct}
+                    onChange={e => setVoiceSettings(s => ({ ...s, volume: Number(e.target.value) / 100 }))}
+                    style={{ flex:1, accentColor:C.accent }} />
+                  <span style={{ fontSize:9, fontFamily:C.mono, color:C.muted }}>100</span>
+                </div>
+              </div>
+
+              {/* Speech rate */}
+              <div>
+                <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
+                  <p style={{ fontSize:9, fontFamily:C.mono, color:C.muted, textTransform:"uppercase", letterSpacing:"1px", margin:0 }}>Speech rate</p>
+                  <span style={{ fontSize:10, fontFamily:C.mono, color:C.accent }}>{voiceSettings.rate.toFixed(1)}x</span>
+                </div>
+                <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                  <span style={{ fontSize:9, fontFamily:C.mono, color:C.muted }}>SLOW</span>
+                  <input type="range" min="0" max="100" step="1" value={ratePct}
+                    onChange={e => setVoiceSettings(s => ({ ...s, rate: 0.5 + (Number(e.target.value) / 100) * 1.5 }))}
+                    style={{ flex:1, accentColor:C.accent }} />
+                  <span style={{ fontSize:9, fontFamily:C.mono, color:C.muted }}>FAST</span>
+                </div>
+              </div>
+
+            </div>
           </div>
         </div>
+
       </div>
     </div>
   );

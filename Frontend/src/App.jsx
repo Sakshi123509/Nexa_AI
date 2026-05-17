@@ -6,8 +6,9 @@ import Home from "./pages/Home.jsx";
 import { useContext } from "react";
 import Customize from "./pages/customize.jsx";
 import { UserDataContext } from "./contextAPI/Usercontext.jsx";
-import Chat from "./pages/Chat.jsx"
+import Chat from "./pages/Chat.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
+import History from "./pages/History.jsx";
 
 import "./index.css";
 import "./App.css";
@@ -31,10 +32,12 @@ const App = () => {
       <Route
         path="/"
         element={
-          userData?.AIimg && userData?.Ainame ? (
+          !userData ? (
+            <Navigate to="/login" /> // ✅ logout fix
+          ) : userData?.AIimg && userData?.Ainame ? (
             <Home />
           ) : (
-            <Navigate to={"/customize"} />
+            <Navigate to="/customize" />
           )
         }
       />
@@ -50,13 +53,11 @@ const App = () => {
         path="/customize"
         element={userData ? <Customize /> : <Navigate to={"/login"} />}
       />
+      <Route path="/chat" element={<Chat />} />
+      <Route path="/dashboard" element={<Dashboard />} />
       <Route
-        path="/chat"
-        element={<Chat/>}
-      />
-      <Route
-      path="/dashboard"
-      element={<Dashboard/>}
+        path="/history"
+        element={userData ? <History /> : <Navigate to="/login" />}
       />
     </Routes>
   );

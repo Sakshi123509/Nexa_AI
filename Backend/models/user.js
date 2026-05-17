@@ -1,5 +1,10 @@
 import mongoose from "mongoose";
-
+const historyEntrySchema = new mongoose.Schema({
+  userMessage: { type: String, required: true },
+  aiResponse:  { type: String, default: "" },
+  type:        { type: String, enum: ["VOICE", "CHAT"], default: "CHAT" },
+  timestamp:   { type: Date,   default: Date.now },
+});
 const userSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -29,7 +34,8 @@ const userSchema = new mongoose.Schema({
     AIimg: {
         type: String,
         default: ""
-    }
+    },
+    history:  { type: [historyEntrySchema], default: [] },
 }, { timestamps: true });
 
 
