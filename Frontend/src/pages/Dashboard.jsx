@@ -5,7 +5,7 @@ import { useState, useEffect, useRef, useContext } from "react";
 import { UserDataContext } from "../contextAPI/Usercontext";
 import axios from "axios";
 import Navbar from "../components/Navbar";
-
+import "../css/dashboard.css"
 /* ── Voice settings helpers (same localStorage key as Home.jsx) ── */
 const STORAGE_KEY = "ai_voice_settings";
 
@@ -335,10 +335,10 @@ const Dashboard = () => {
         display: "flex",
         minHeight: "100vh",
         background: C.bg,
-        overflowX: "hidden",
       }}
     >
       <Navbar />
+      
 
       {/* Grid background */}
       <div
@@ -775,18 +775,14 @@ const Dashboard = () => {
         </div>
 
         {/* ── Bottom row ── */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns:
-              window.innerWidth <= 480
-                ? "1fr"
-                : window.innerWidth <= 768
-                  ? "repeat(2,1fr)"
-                  : "repeat(4,1fr)",
-            gap: 12,
-          }}
-        >
+    <div
+  style={{
+    display: "grid",
+    // Desktop par 4 columns banenge, choti screen par auto-adjust ho jayenge
+    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+    gap: "12px",
+  }}
+>
           {/* Recent activity */}
           <div style={card}>
             <p
@@ -905,7 +901,7 @@ const Dashboard = () => {
               {sysItems.map((sys, i) => (
                 <div
                   key={sys.name}
-                  style={{ marginBottom: i < sysItems.length - 1 ? 12 : 0 }}
+                  style={{ marginBottom: i < sysItems.length - 1 ? 19 : 0 }}
                 >
                   <div
                     style={{

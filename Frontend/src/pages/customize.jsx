@@ -917,9 +917,9 @@ const Customize = () => {
 const styles = {
   grid: {
     display: "grid",
-    gap: 12,
+    gap: 14,
     margin: "0 auto",
-    gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
     gap: window.innerWidth < 640 ? 10 : 14,
     marginBottom: 28,
     position: "relative",
@@ -936,10 +936,10 @@ const styles = {
     cursor: "pointer",
     aspectRatio: "3/4",
     width: "100%",
-    maxHeight: window.innerWidth < 500 ? 190 : 260,
+    // maxHeight: window.innerWidth < 500 ? 190 : 220,
     background: "rgba(0,15,40,0.6)",
     transition: "all 0.3s ease",
-    // minHeight: window.innerWidth < 500 ? 180 : 220,
+    minHeight: window.innerWidth < 500 ? 180 : 220,
   },
 
   cardImg: {
