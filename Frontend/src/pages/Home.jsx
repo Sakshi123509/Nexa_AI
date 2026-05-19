@@ -343,12 +343,14 @@ const Home = () => {
         style={{
           width: "100%",
           minHeight: "100vh",
+          paddingLeft: window.innerWidth <= 768 ? "0px" : "224px",
+          boxSizing: "border-box",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
           flexDirection: "column",
           position: "relative",
-          padding: "20px 24px",
+          padding: window.innerWidth <= 480 ? "20px 12px" : "20px 24px",
           zIndex: 10,
         }}
       >
@@ -373,6 +375,9 @@ const Home = () => {
                 : isSpeaking
                   ? "0 0 0 4px #5aefb8, 0 0 40px rgba(90,239,184,0.4)"
                   : "0 0 30px rgba(0,255,255,0.15)",
+              width: window.innerWidth <= 480 ? 180 : 260,
+              height: window.innerWidth <= 480 ? 180 : 260,
+              margin: "0 auto",
             }}
           >
             <img
@@ -482,7 +487,7 @@ const Home = () => {
             width: "100%",
             color: "#fff",
             fontSize: 14,
-           
+
             borderRadius: 14,
             textAlign: "center",
           }}
@@ -543,7 +548,7 @@ const Home = () => {
               top: 0,
               right: 0,
               height: "100vh",
-              width: 300,
+              width: window.innerWidth <= 480 ? "100%" : 300,
               zIndex: 40,
               background: "#050e1a",
               borderLeft: "1px solid rgba(0,229,255,0.12)",

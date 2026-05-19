@@ -63,7 +63,6 @@ export default function Login() {
       style={{
         position: "relative",
         minHeight: "100vh",
-        // Remove default backgroundColor
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -96,7 +95,7 @@ export default function Login() {
 
       {/* Main Container: Fixed Width for Consistency */}
       <div
-        className="nx-auth-container nx-fade-1"
+        className="nx-auth-container nx-fade-1 main_container"
         style={{
           zIndex: 10,
           position: "relative",
@@ -179,9 +178,9 @@ export default function Login() {
               </div>
 
               <h1
-                className="nx-orbitron"
+                className="nx-orbitron  nx-title"
                 style={{
-                  fontSize: "22px",
+                  fontSize:"22px",
                   letterSpacing: "2px",
                   color: "white",
                   margin: "0 0 5px 0",
@@ -205,7 +204,7 @@ export default function Login() {
               style={{ display: "flex", flexDirection: "column", gap: "18px" }}
             >
               {view === "register" && (
-                <div className="input-group">
+                <div className="input-group ">
                   <label style={labelStyle}>__OPERATOR_CALLSIGN</label>
                   <input
                     className="nx-input"

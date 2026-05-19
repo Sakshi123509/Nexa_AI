@@ -155,3 +155,30 @@ textarea:-webkit-autofill {
   box-shadow: 0 0 0px 1000px transparent inset !important;
   transition: background-color 5000s ease-in-out 0s;
 }
+.main_container {
+  width: 100%;
+  max-width: 400px;
+}
+
+/* Tablet */
+@media (max-width: 780px) {
+  .main_container {
+    max-width: 500px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .main_container {
+    max-width: 100%;
+  }
+
+  .nx-title {
+    font-size: 18px !important;
+  }
+
+  .nx-input {
+    font-size: 14px !important;
+    padding: 12px !important;
+  }
+}

@@ -38,21 +38,24 @@ const S = {
   root: {
     display: "flex",
     height: "100vh",
+    width: "100%",
+    overflowX: "hidden",
     background: "#05070a",
     fontFamily: "'Space Grotesk','Segoe UI',system-ui,sans-serif",
   },
   main: {
-    marginLeft: 224,
+    marginLeft: window.innerWidth <= 768 ? 0 : 224,
     flex: 1,
     overflowY: "auto",
     display: "flex",
     flexDirection: "column",
     scrollbarWidth: "thin",
+    width: "100%",
   },
 
   // Header area
   headerWrap: {
-    padding: "20px 24px 0",
+    padding: window.innerWidth <= 768 ? "70px 14px 0" : "20px 24px 0",
     background: "#05070a",
     position: "sticky",
     top: 0,
@@ -68,7 +71,7 @@ const S = {
     marginBottom: 4,
   },
   pageTitle: {
-    fontSize: 22,
+    fontSize: window.innerWidth <= 768 ? 18 : 22,
     fontWeight: 600,
     color: "#e0f4ff",
     letterSpacing: "-0.5px",
@@ -96,7 +99,12 @@ const S = {
   statValue: (color) => ({ fontSize: 16, fontWeight: 600, color: color }),
 
   // Search + filter
-  searchRow: { display: "flex", gap: 8, paddingBottom: 14 },
+  searchRow: {
+    display: "flex",
+    gap: 8,
+    paddingBottom: 14,
+    flexWrap: "wrap",
+  },
   searchWrap: { flex: 1, position: "relative" },
   searchInput: {
     width: "100%",
@@ -119,6 +127,7 @@ const S = {
     pointerEvents: "none",
   },
   filterBtn: (active) => ({
+    flex: window.innerWidth <= 768 ? "1" : "unset",
     padding: "9px 16px",
     borderRadius: 10,
     cursor: "pointer",
@@ -133,8 +142,10 @@ const S = {
   }),
 
   // Content
-  content: { flex: 1, padding: "20px 24px 32px" },
-
+  content: {
+    flex: 1,
+    padding: window.innerWidth <= 768 ? "16px 12px 24px" : "20px 24px 32px",
+  },
   // Day group
   dayLabel: {
     display: "flex",
@@ -171,8 +182,8 @@ const S = {
   itemRow: {
     display: "flex",
     alignItems: "center",
-    gap: 12,
-    padding: "12px 14px",
+    gap: 10,
+    padding: window.innerWidth <= 768 ? "10px" : "12px 14px",
   },
   itemIcon: (bg) => ({
     width: 34,
@@ -186,7 +197,7 @@ const S = {
     flexShrink: 0,
   }),
   itemMsg: {
-    fontSize: 13,
+    fontSize: window.innerWidth <= 768 ? 12 : 13,
     color: "#c8dff0",
     margin: 0,
     whiteSpace: "nowrap",

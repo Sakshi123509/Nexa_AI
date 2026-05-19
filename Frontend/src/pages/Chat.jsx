@@ -183,13 +183,21 @@ const Chat = () => {
 
   // ── Sidebar offset ──────────────────────────────────────────
   return (
-    <div style={{ display: "flex", height: "100vh", background: "#030f1a" }}>
+    <div
+      style={{
+        display: "flex",
+        height: "100vh",
+        background: "#030f1a",
+        overflow: "hidden",
+      }}
+    >
       <Navbar />
       <div
         style={{
-          marginLeft: 224,
+          marginLeft: window.innerWidth <= 768 ? 0 : 224,
           flex: 1,
           display: "flex",
+          width: "100%",
           flexDirection: "column",
           position: "relative",
           overflow: "hidden",
@@ -214,12 +222,14 @@ const Chat = () => {
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            padding: "12px 20px",
+            padding: window.innerWidth <= 768 ? "10px 14px" : "12px 20px",
             borderBottom: "1px solid rgba(0,229,255,0.12)",
             background: "rgba(4,12,28,0.95)",
             zIndex: 10,
             flexShrink: 0,
             backdropFilter: "blur(8px)",
+            gap: 10,
+            flexWrap: "wrap",
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -312,7 +322,7 @@ const Chat = () => {
           style={{
             flex: 1,
             overflowY: "auto",
-            padding: "16px 24px",
+         padding: window.innerWidth <= 768 ? "12px 10px" : "16px 24px",
             display: "flex",
             flexDirection: "column",
             gap: 14,
@@ -359,7 +369,7 @@ const Chat = () => {
               style={{
                 display: "flex",
                 gap: 10,
-                maxWidth: "82%",
+              maxWidth: window.innerWidth <= 768 ? "94%" : "82%",
                 alignSelf: msg.role === "user" ? "flex-end" : "flex-start",
                 flexDirection: msg.role === "user" ? "row-reverse" : "row",
                 animation: "fadeUp 0.25s ease",

@@ -683,23 +683,20 @@ const Customize = () => {
       <button
         onClick={() => navigate("/")}
         style={{
-          position: "absolute",
-          top: 16,
-          left: 16,
+          position: "fixed",
+          top: 12,
+          left: 12,
+          zIndex: 50,
           display: "flex",
           alignItems: "center",
           gap: 6,
-          background: "transparent",
-          border: "none",
-          color: "rgba(0,207,255,0.5)",
-          fontFamily: "var(--font-mono)",
-          fontSize: 11,
-          letterSpacing: "2px",
+          background: "rgba(0,0,0,0.3)",
+          backdropFilter: "blur(8px)",
+          border: "1px solid rgba(0,207,255,0.15)",
+          color: "rgba(0,207,255,0.7)",
+          padding: "8px 12px",
+          borderRadius: 10,
           cursor: "pointer",
-          padding: "6px 10px",
-          borderRadius: "var(--radius)",
-          transition: "color 0.3s",
-          zIndex: 10,
         }}
       >
         <IoMdArrowRoundBack size={16} />
@@ -760,6 +757,7 @@ const Customize = () => {
           return (
             <div
               onMouseEnter={(e) => {
+                if (window.innerWidth < 768) return;
                 e.currentTarget.style.transform =
                   "translateY(-6px) scale(1.03)";
                 e.currentTarget.style.boxShadow =
@@ -919,30 +917,35 @@ const Customize = () => {
 const styles = {
   grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
     gap: 12,
+    margin: "0 auto",
+    gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
+    gap: window.innerWidth < 640 ? 10 : 14,
     marginBottom: 28,
     position: "relative",
     zIndex: 1,
-    maxWidth: 860,
-    margin: "0 auto 28px",
+    maxWidth: 900,
+    marginInline: "auto",
+    width: "100%",
   },
 
   card: {
     position: "relative",
-    borderRadius: 10,
+    borderRadius: 12,
     overflow: "hidden",
     cursor: "pointer",
     aspectRatio: "3/4",
+    width: "100%",
+    maxHeight: window.innerWidth < 500 ? 190 : 260,
     background: "rgba(0,15,40,0.6)",
     transition: "all 0.3s ease",
+    // minHeight: window.innerWidth < 500 ? 180 : 220,
   },
 
   cardImg: {
     width: "100%",
     height: "100%",
     objectFit: "cover",
-    transition: "filter 0.25s, transform 0.25s",
     display: "block",
   },
 
@@ -981,20 +984,6 @@ const styles = {
     boxShadow: "0 0 8px rgba(0,207,255,0.5)",
   },
 
-  uploadCard: {
-    position: "relative",
-    borderRadius: 10,
-    overflow: "hidden",
-    cursor: "pointer",
-    aspectRatio: "3/4",
-    background: "rgba(0,15,40,0.3)",
-    border: "1px dashed rgba(0,229,255,0.2)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    transition: "border-color 0.3s",
-  },
-
   uploadInner: {
     display: "flex",
     flexDirection: "column",
@@ -1009,7 +998,22 @@ const styles = {
     letterSpacing: "2px",
   },
 
+  uploadCard: {
+    position: "relative",
+    borderRadius: 12,
+    overflow: "hidden",
+    cursor: "pointer",
+    aspectRatio: "3/4",
+    minHeight: window.innerWidth < 500 ? 180 : 220,
+    background: "rgba(0,15,40,0.3)",
+    border: "1px dashed rgba(0,229,255,0.2)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
   nameSection: {
+    width: "100%",
     maxWidth: 460,
     margin: "0 auto",
     position: "relative",
@@ -1017,6 +1021,7 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     gap: 12,
+    paddingInline: 4,
   },
 
   separator: {
@@ -1061,32 +1066,31 @@ const styles = {
     zIndex: 1,
     pointerEvents: "none",
   },
-
   nameInput: {
     width: "100%",
-    padding: "13px 14px 13px 34px",
+    padding: "14px 14px 14px 36px",
     background: "rgba(0,25,60,0.45)",
     border: "1px solid rgba(0,229,255,0.2)",
-    borderRadius: "var(--radius)",
+    borderRadius: 10,
     color: "var(--text-primary)",
     fontFamily: "var(--font-mono)",
-    fontSize: 13,
-    letterSpacing: "2px",
+    fontSize: window.innerWidth < 500 ? 12 : 13,
+    letterSpacing: "1.5px",
     outline: "none",
-    transition: "border-color 0.3s, box-shadow 0.3s",
+    boxSizing: "border-box",
   },
 
   saveBtn: {
     width: "100%",
-    padding: "14px",
+    padding: window.innerWidth < 500 ? "13px" : "14px",
     background: "rgba(0,207,255,0.08)",
     border: "1px solid rgba(0,207,255,0.45)",
-    borderRadius: "var(--radius)",
+    borderRadius: 10,
     color: "var(--accent)",
     fontFamily: "var(--font-display)",
-    fontSize: 11,
+    fontSize: window.innerWidth < 500 ? 10 : 11,
     fontWeight: 500,
-    letterSpacing: "3px",
+    letterSpacing: "2px",
     transition: "all 0.3s",
   },
 };

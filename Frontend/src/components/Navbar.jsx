@@ -184,15 +184,27 @@ function getInitials(name = "", email = "") {
 export default function Navbar({ unreadCount = 0 }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(window.innerWidth <= 768);
   const [hoveredId, setHoveredId] = useState(null);
   const [logoutHov, setLogoutHov] = useState(false);
   const [sysTime, setSysTime] = useState(new Date());
+  const [screenWidth, setScreenWidth] = useState(window.innerWidth);
 
   // ── Dynamic user — read from localStorage directly ──
   // This runs on mount AND updates if storage changes
   const [userData, setuserData] = useState(() => loadUserFromStorage());
   // Navbar mein logout function ko yeh se replace karo
+
+  useEffect(() => {
+    const handleResize = () => {
+      setScreenWidth(window.innerWidth);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+  const isMobile = screenWidth <= 768;
+
   const handleLogout = async () => {
     try {
       window.speechSynthesis?.cancel();
@@ -306,9 +318,15 @@ export default function Navbar({ unreadCount = 0 }) {
     sidebar: {
       position: "fixed",
       top: 0,
-      left: 0,
+      left: window.innerWidth <= 768 ? (collapsed ? "-100%" : "0") : "0",
       height: "100vh",
-      width: collapsed ? "56px" : "224px",
+      width: isMobile
+        ? collapsed
+          ? "0px"
+          : "100%"
+        : collapsed
+          ? "56px"
+          : "224px",
       backgroundImage: `linear-gradient(rgba(2,12,20,0.9), rgba(2,12,20,0.6)), url(${bg})`,
       backgroundSize: "cover",
       backgroundPosition: "center",
@@ -318,6 +336,7 @@ export default function Navbar({ unreadCount = 0 }) {
       zIndex: 1000,
       transition: "width 0.25s cubic-bezier(0.4,0,0.2,1)",
       overflow: "hidden",
+      transition: "all 0.3s ease",
     },
 
     logoBar: {
@@ -344,18 +363,27 @@ export default function Navbar({ unreadCount = 0 }) {
     },
 
     collapseBtn: {
-      width: 22,
-      height: 22,
+      width: screenWidth <= 768 ? 42 : 22,
+      height: screenWidth <= 768 ? 42 : 22,
+
+      position: screenWidth <= 768 ? "fixed" : "relative",
+      top: screenWidth <= 768 ? "10px" : "0",
+      left: screenWidth <= 768 ? "10px" : "0",
+      zIndex: screenWidth <= 768 ? 2000 : "auto",
+
       border: "1px solid rgba(0,229,255,0.2)",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       cursor: "pointer",
       color: "#4a8a9a",
-      background: "transparent",
+
+      background: screenWidth <= 768 ? "rgba(2,12,20,0.9)" : "transparent",
+      backdropFilter: screenWidth <= 768 ? "blur(14px)" : "none",
+
       flexShrink: 0,
-      transition: "color 0.2s, border-color 0.2s, background 0.2s",
-      borderRadius: 2,
+      transition: "all 0.2s ease",
+      borderRadius: 8,
     },
 
     nav: {
@@ -535,7 +563,14 @@ export default function Navbar({ unreadCount = 0 }) {
                 boxSizing: "border-box",
                 width: "100%",
               }}
-              onClick={() => navigate(item.path)}
+              onClick={() => {
+                navigate(item.path);
+
+                // Mobile pe auto close
+                if (isMobile) {
+                  setCollapsed(true);
+                }
+              }}
               onMouseEnter={() => setHoveredId(item.id)}
               onMouseLeave={() => setHoveredId(null)}
             >
@@ -813,9 +848,12 @@ export function NavbarLayout({ children, unreadCount }) {
         style={{
           // ✅ Dynamically adjust left margin based on sidebar state
           // Since collapsed state lives in Navbar, use CSS transition trick
-          marginLeft: 224, // matches expanded width — adjust if you share collapse state
+          marginLeft: window.innerWidth <= 768 ? "0px" : "224px", // matches expanded width — adjust if you share collapse state
           flex: 1,
+          width: window.innerWidth <= 480 ? 170 : 260,
+          height: window.innerWidth <= 480 ? 170 : 260,
           minHeight: "100vh",
+          width: "100%",
           background: "#030f1a",
           backgroundImage:
             "radial-gradient(circle, #0a2a3a 1px, transparent 1px)",
