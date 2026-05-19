@@ -10,6 +10,8 @@
 
 **A voice-activated AI assistant — say the wake word and let NEXA do the rest.**
 
+🔗 [Live Demo](https://nexa-ai-dun.vercel.app) &nbsp;•&nbsp; [GitHub](https://github.com/Sakshi123509/Nexa_AI)
+
 </div>
 
 ---
@@ -50,7 +52,7 @@
 
 ```
 NEXA_AI/
-├── frontend/
+├── Frontend/
 │   ├── src/
 │   │   ├── pages/
 │   │   │   ├── Home.jsx          # Voice assistant main page
@@ -64,9 +66,10 @@ NEXA_AI/
 │   │   │   └── Animation.jsx     # Neural background canvas
 │   │   └── contextAPI/
 │   │       └── Usercontext.jsx   # Global state management
+│   ├── vercel.json               # Vercel SPA + API proxy config
 │   └── vite.config.js
 │
-└── backend/
+└── Backend/
     ├── controller/
     │   ├── usercontroler.js      # User, history, dashboard logic
     │   └── authcontroler.js      # Register, login, logout
@@ -98,18 +101,18 @@ NEXA_AI/
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/nexa-ai.git
-cd nexa-ai
+git clone https://github.com/Sakshi123509/Nexa_AI.git
+cd Nexa_AI
 ```
 
 ### 2. Backend Setup
 
 ```bash
-cd backend
+cd Backend
 npm install
 ```
 
-Create `.env` file in `/backend`:
+Create `.env` file in `/Backend`:
 
 ```env
 PORT=5000
@@ -128,12 +131,18 @@ npm run dev
 ### 3. Frontend Setup
 
 ```bash
-cd frontend
+cd Frontend
 npm install
 npm run dev
 ```
 
-Frontend runs on `http://localhost:5173`
+Create `.env` file in `/Frontend`:
+
+```env
+VITE_API_URL=http://localhost:5000
+```
+
+Frontend runs on `http://localhost:5173`  
 Backend runs on `http://localhost:5000`
 
 ---
@@ -141,9 +150,9 @@ Backend runs on `http://localhost:5000`
 ## 🎤 How to Use
 
 1. **Register** → Create your account
-2. **Setup Persona** → Choose assistant name & avatar
+2. **Setup Persona** → Go to _PERSONA and choose assistant name & avatar
 3. **Go to Assistant page** → Click **Start Listening**
-4. **Say the wake word** → e.g., *"Hey Siri, what is the weather today?"*
+4. **Say the wake word** → e.g., *"Hey Nexa, what is the weather today?"*
 5. **NEXA responds** — speaks back + opens relevant apps/links
 
 ### Example Voice Commands
@@ -155,18 +164,53 @@ Backend runs on `http://localhost:5000`
 | `[wake word] what time is it` | Speaks current time |
 | `[wake word] open Instagram` | Opens Instagram |
 | `[wake word] open maps Mumbai` | Opens Google Maps |
-| `[wake word] what is machine learning` | AI explanation |
+| `[wake word] what is machine learning` | AI explanation via Gemini |
 
 ---
 
 ## 🔑 Environment Variables
 
+### Backend
+
 | Variable | Description |
 |----------|-------------|
-| `MONGODB_URI` | MongoDB connection string |
+| `MONGODB_URI` | MongoDB Atlas connection string |
 | `JWT_SECRET` | Secret key for JWT tokens |
 | `GEMINI_API_KEY` | Google Gemini AI API key |
-| `CLOUDINARY_*` | Cloudinary image upload config |
+| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name |
+| `CLOUDINARY_API_KEY` | Cloudinary API key |
+| `CLOUDINARY_API_SECRET` | Cloudinary API secret |
+
+### Frontend
+
+| Variable | Description |
+|----------|-------------|
+| `VITE_API_URL` | Backend server URL |
+
+---
+
+## 🌐 Deployment
+
+- **Frontend** → [Vercel](https://nexa-ai-dun.vercel.app)
+- **Backend** → [Render](https://render.com)
+- **Database** → [MongoDB Atlas](https://mongodb.com/atlas)
+
+### Vercel Config (`vercel.json`)
+
+```json
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://nexa-ai-wy87.onrender.com/api/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
+```
 
 ---
 
@@ -180,21 +224,15 @@ Backend runs on `http://localhost:5000`
 
 ---
 
-## 🌐 Deployment
-
-- **Frontend** → [Vercel](https://vercel.com)
-- **Backend** → [Render](https://render.com)
-- **Database** → [MongoDB Atlas](https://mongodb.com/atlas)
-
----
-
 ## 🤝 Contributing
 
-Pull requests are welcome! For major changes, please open an issue first.
+Pull requests are welcome! For major changes, please open an issue first to discuss what you'd like to change.
 
 ---
 
 <div align="center">
+
+Made with ❤️ by [Sakshi](https://github.com/Sakshi123509)
 
 ⭐ Star this repo if you found it helpful!
 
