@@ -7,10 +7,8 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import logo from "../assets/removed_logo.png";
 import bg from "../assets/bgside.jpg";
-import chat from "../pages/chat.jsx";
-import Dashboard from "../pages/Dashboard";
 import axios from "axios";
-import { serverUrl } from "../config.js";
+
 // ─── Icons ───────────────────────────────────────────
 const Icons = {
   dashboard: (

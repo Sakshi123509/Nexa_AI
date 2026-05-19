@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useContext } from "react";
 import { UserDataContext } from "../contextAPI/Usercontext";
 import axios from "axios";
-import Navbar from "../components/Navbar";
+import Navbar from "../components/Navbar.jsx";
 import img from "../assets/Gemini_Generated.png";
 // import { serverUrl } from "../config.js";
 
