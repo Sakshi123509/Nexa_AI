@@ -39,8 +39,7 @@ export default function Login() {
       const res = await axios.post(`${endpoint}`, payload, {
         withCredentials: true,
       });
-      console.log(import.meta.env.REACT_APP_API_URL);
-
+    
       localStorage.setItem(
         "nexa_user",
         JSON.stringify({

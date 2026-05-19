@@ -6,7 +6,7 @@ export const Register = async (req, res) => {
     try {
         const { name, email, password } = req.body;
         const existedemail = await User.findOne({ email })
-        
+
         //check done
         if (existedemail) {
             return res.status(400).json({ message: "email already exist!!" });
@@ -28,13 +28,13 @@ export const Register = async (req, res) => {
 
         //create token(cookie me store krna h isko)
         const token = gettoken(user._id);
-
+  
         //store in cookie
         res.cookie("token", token, {
             httpOnly: true,
             maxAge: 7 * 24 * 60 * 60 * 1000,
             sameSite: "none",
-            secure: false,
+            secure: true,
         })
 
         //send to frontend
@@ -68,15 +68,14 @@ export const Login = async (req, res) => {
 
         //create token(cookie me store krna h isko)
         const token = gettoken(RegisteredUser._id);
-
+       
         //store in cookie
         res.cookie("token", token, {
             httpOnly: true,
             maxAge: 7 * 24 * 60 * 60 * 1000,
             sameSite: "none",
             secure: true,
-        })
-    ;
+        });
         //send to frontend
         return res.status(201).json(RegisteredUser);
 
