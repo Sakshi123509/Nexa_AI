@@ -27,6 +27,7 @@ connectdb();
 app.listen(PORT, () => {
     console.log(`Server started at port ${PORT}`);
 })
+
 // console.log("MONGO_URI:", process.env.MONGO_URI ? "✅ Found" : "❌ Missing");
 // console.log("JWT_SECRET:", process.env.JWT_SECRET ? "✅ Found" : "❌ Missing");
 // console.log("GEMINI_API_KEY:", process.env.GEMINI_API_KEY ? "✅ Found" : "❌ Missing");
