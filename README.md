@@ -189,21 +189,17 @@ Backend runs on `http://localhost:5000`
 
 ---
 ### 🧩 Core Modules
-
 ## 📸 Screenshots
 
-<img src="https://raw.githubusercontent.com/Sakshi123509/Nexa_AI/main/Frontend/src/assets/dashboard.png" width="800"/>
+<div align="center">
 
-<img src="https://raw.githubusercontent.com/Sakshi123509/Nexa_AI/main/Frontend/src/assets/assistant.png" width="800"/>
+<img src="https://raw.githubusercontent.com/Sakshi123509/Nexa_AI/main/Frontend/src/assets/dashboard.png" width="390"/> &nbsp; <img src="https://raw.githubusercontent.com/Sakshi123509/Nexa_AI/main/Frontend/src/assets/assistant.png" width="390"/>
 
-<img src="https://raw.githubusercontent.com/Sakshi123509/Nexa_AI/main/Frontend/src/assets/chat.png" width="800"/>
-
-<img src="https://raw.githubusercontent.com/Sakshi123509/Nexa_AI/main/Frontend/src/assets/history.png" width="800"/>
+<img src="https://raw.githubusercontent.com/Sakshi123509/Nexa_AI/main/Frontend/src/assets/chat.png" width="390"/> &nbsp; <img src="https://raw.githubusercontent.com/Sakshi123509/Nexa_AI/main/Frontend/src/assets/history.png" width="390"/>
 
 <img src="https://raw.githubusercontent.com/Sakshi123509/Nexa_AI/main/Frontend/src/assets/customize.png" width="800"/>
 
 </div>
-
 ## 🌐 Deployment
 
 - **Frontend** → [Vercel](https://nexa-ai-dun.vercel.app)
