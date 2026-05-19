@@ -1,12 +1,11 @@
 # 🤖 NEXA_AI — Voice-Activated AI Assistant
 
+
 <div align="center">
 
-![NEXA_AI Banner](https://img.shields.io/badge/NEXA__AI-CORE__v1.0.4-00f2ff?style=for-the-badge&logo=robot&logoColor=white)
-![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
-![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
-![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)
-![Gemini AI](https://img.shields.io/badge/Gemini_AI-4285F4?style=for-the-badge&logo=google&logoColor=white)
+<img src="./Frontend/src/assests/logo.jpg" alt="NEXA AI Logo" width="120" height="120" />
+
+<h1>🤖 NEXA_AI — Voice-Activated AI Assistant</h1>
 
 **A voice-activated AI assistant — say the wake word and let NEXA do the rest.**
 
@@ -15,7 +14,45 @@
 </div>
 
 ---
+## 🎯 What is Nexa AI?
+ 
+Nexa AI is a smart, voice-activated virtual assistant built with the MERN stack and powered by Google's **Gemini API**. Just speak your command — Nexa listens via the browser's built-in **Speech-to-Text API**, sends it to Gemini for an intelligent response, and replies back with a natural voice. You can also instruct Nexa to **open websites**, **play YouTube videos**, **search the web**, and much more — all hands-free.
 
+<br/>
+
+### 🧩 Core Modules
+
+<table>
+  <tr>
+    <td align="center" width="150">
+      <img src="./Frontend/src/assests/chat.png" width="48"/><br/>
+      <b>Chat</b><br/>
+      <sub>Type queries anytime</sub>
+    </td>
+    <td align="center" width="150">
+      <img src="./Frontend/src/assests/history.png" width="48"/><br/>
+      <b>History</b><br/>
+      <sub>Browse past sessions</sub>
+    </td>
+    <td align="center" width="150">
+      <img src="./Frontend/src/assests/dashboard.png" width="48"/><br/>
+      <b>Dashboard</b><br/>
+      <sub>Stats & analytics</sub>
+    </td>
+    <td align="center" width="150">
+      <img src="./Frontend/src/assests/assistant.png" width="48"/><br/>
+      <b>Assistant</b><br/>
+      <sub>Voice-activated AI</sub>
+    </td>
+    <td align="center" width="150">
+      <img src="./Frontend/src/assests/customize.png" width="48"/><br/>
+      <b>Customize</b><br/>
+      <sub>Persona & voice setup</sub>
+    </td>
+  </tr>
+</table>
+
+</div>
 ## ✨ Features
 
 - 🎤 **Voice Activation** — Say your assistant's wake word to trigger commands
@@ -211,18 +248,6 @@ Backend runs on `http://localhost:5000`
   ]
 }
 ```
-
----
-
-## 📸 Screenshots
-
-> _Add screenshots of your app here_
-
-| Dashboard | Voice Assistant | History |
-|-----------|----------------|---------|
-| ![dashboard]() | ![home]() | ![history]() |
-
----
 
 ## 🤝 Contributing
 
