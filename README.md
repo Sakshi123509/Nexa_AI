@@ -1,9 +1,5 @@
-# 🤖 NEXA_AI — Voice-Activated AI Assistant
-
-
 <div align="center">
-
-<img src="./Frontend/src/assests/logo.jpg" alt="NEXA AI Logo" width="120" height="120" />
+<img src="https://raw.githubusercontent.com/Sakshi123509/Nexa_AI/main/Frontend/src/assets/logo.jpg" alt="NEXA AI Logo" width="120" height="120" />
 
 <h1>🤖 NEXA_AI — Voice-Activated AI Assistant</h1>
 
@@ -20,39 +16,6 @@ Nexa AI is a smart, voice-activated virtual assistant built with the MERN stack 
 
 <br/>
 
-### 🧩 Core Modules
-
-<table>
-  <tr>
-    <td align="center" width="150">
-      <img src="./Frontend/src/assests/chat.png" width="48"/><br/>
-      <b>Chat</b><br/>
-      <sub>Type queries anytime</sub>
-    </td>
-    <td align="center" width="150">
-      <img src="./Frontend/src/assests/history.png" width="48"/><br/>
-      <b>History</b><br/>
-      <sub>Browse past sessions</sub>
-    </td>
-    <td align="center" width="150">
-      <img src="./Frontend/src/assests/dashboard.png" width="48"/><br/>
-      <b>Dashboard</b><br/>
-      <sub>Stats & analytics</sub>
-    </td>
-    <td align="center" width="150">
-      <img src="./Frontend/src/assests/assistant.png" width="48"/><br/>
-      <b>Assistant</b><br/>
-      <sub>Voice-activated AI</sub>
-    </td>
-    <td align="center" width="150">
-      <img src="./Frontend/src/assests/customize.png" width="48"/><br/>
-      <b>Customize</b><br/>
-      <sub>Persona & voice setup</sub>
-    </td>
-  </tr>
-</table>
-
-</div>
 ## ✨ Features
 
 - 🎤 **Voice Activation** — Say your assistant's wake word to trigger commands
@@ -225,7 +188,18 @@ Backend runs on `http://localhost:5000`
 | `VITE_API_URL` | Backend server URL |
 
 ---
+### 🧩 Core Modules
+## 📸 Screenshots
 
+<div align="center">
+
+<img src="https://raw.githubusercontent.com/Sakshi123509/Nexa_AI/main/Frontend/src/assets/dashboard.png" width="390"/> &nbsp; <img src="https://raw.githubusercontent.com/Sakshi123509/Nexa_AI/main/Frontend/src/assets/assistant.png" width="390"/>
+
+<img src="https://raw.githubusercontent.com/Sakshi123509/Nexa_AI/main/Frontend/src/assets/chat.png" width="390"/> &nbsp; <img src="https://raw.githubusercontent.com/Sakshi123509/Nexa_AI/main/Frontend/src/assets/history.png" width="390"/>
+
+<img src="https://raw.githubusercontent.com/Sakshi123509/Nexa_AI/main/Frontend/src/assets/customize.png" width="800"/>
+
+</div>
 ## 🌐 Deployment
 
 - **Frontend** → [Vercel](https://nexa-ai-dun.vercel.app)
