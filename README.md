@@ -20,28 +20,28 @@ Nexa AI is a smart, voice-activated virtual assistant built with the MERN stack 
 
 <table>
   <tr>
-    <td align="center" width="150">
-      <img src="https://raw.githubusercontent.com/Sakshi123509/Nexa_AI/main/Frontend/src/assets/chat.png" width="48"/><br/>
+    <td align="center" width="180">
+      <img src="https://raw.githubusercontent.com/Sakshi123509/Nexa_AI/main/Frontend/src/assets/chat.png" width="120" height="80" style="border-radius:8px"/><br/><br/>
       <b>Chat</b><br/>
       <sub>Type queries anytime</sub>
     </td>
-    <td align="center" width="150">
-      <img src="https://raw.githubusercontent.com/Sakshi123509/Nexa_AI/main/Frontend/src/assets/history.png" width="48"/><br/>
+    <td align="center" width="180">
+      <img src="https://raw.githubusercontent.com/Sakshi123509/Nexa_AI/main/Frontend/src/assets/history.png" width="120" height="80" style="border-radius:8px"/><br/><br/>
       <b>History</b><br/>
       <sub>Browse past sessions</sub>
     </td>
-    <td align="center" width="150">
-      <img src="https://raw.githubusercontent.com/Sakshi123509/Nexa_AI/main/Frontend/src/assets/dashboard.png" width="48"/><br/>
+    <td align="center" width="180">
+      <img src="https://raw.githubusercontent.com/Sakshi123509/Nexa_AI/main/Frontend/src/assets/dashboard.png" width="120" height="80" style="border-radius:8px"/><br/><br/>
       <b>Dashboard</b><br/>
       <sub>Stats & analytics</sub>
     </td>
-    <td align="center" width="150">
-      <img src="https://raw.githubusercontent.com/Sakshi123509/Nexa_AI/main/Frontend/src/assets/assistant.png" width="48"/><br/>
+    <td align="center" width="180">
+      <img src="https://raw.githubusercontent.com/Sakshi123509/Nexa_AI/main/Frontend/src/assets/assistant.png" width="120" height="80" style="border-radius:8px"/><br/><br/>
       <b>Assistant</b><br/>
       <sub>Voice-activated AI</sub>
     </td>
-    <td align="center" width="150">
-      <img src="https://raw.githubusercontent.com/Sakshi123509/Nexa_AI/main/Frontend/src/assets/customize.png" width="48"/><br/>
+    <td align="center" width="180">
+      <img src="https://raw.githubusercontent.com/Sakshi123509/Nexa_AI/main/Frontend/src/assets/customize.png" width="120" height="80" style="border-radius:8px"/><br/><br/>
       <b>Customize</b><br/>
       <sub>Persona & voice setup</sub>
     </td>
