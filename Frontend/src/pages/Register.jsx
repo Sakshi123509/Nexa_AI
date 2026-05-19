@@ -22,7 +22,7 @@ const Register = () => {
     e.preventDefault();
     try {
       let result = await axios.post(
-        `${serverUrl}/api/auth/register`,
+        `/api/auth/register`,
         {
           name,
           email,

@@ -6,7 +6,7 @@
 import { useContext, useEffect, useState, useRef } from "react";
 import { UserDataContext } from "../contextAPI/Usercontext.jsx";
 import { useNavigate } from "react-router-dom";
-
+// import { serverUrl } from "../config.js";
 import axios from "axios";
 import { initNeuralBackground } from "../components/Animation.jsx";
 import Navbar from "../components/Navbar.jsx";
@@ -190,7 +190,7 @@ const Home = () => {
   const saveChat = async (userMessage, aiText) => {
     try {
       await axios.post(
-        `${serverUrl}/api/user/savechat`,
+        `/api/user/savechat`,
         { userMessage, aiResponse: aiText, type: "VOICE" },
         { withCredentials: true },
       );
@@ -204,7 +204,7 @@ const Home = () => {
   const handleLogout = async () => {
     try {
       window.speechSynthesis.cancel();
-      await axios.get(`${serverUrl}/api/auth/logout`, {
+      await axios.get(`/api/auth/logout`, {
         withCredentials: true,
       });
       setuserData(null);

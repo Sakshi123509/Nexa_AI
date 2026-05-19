@@ -574,6 +574,7 @@ import { UserDataContext } from "../contextAPI/Usercontext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { initSimpleBackground } from "../components/Animation.jsx";
+// import { serverUrl } from "../config.js";
 
 const Customize = () => {
   const navigate = useNavigate();
@@ -627,7 +628,7 @@ const Customize = () => {
         formData.append("imageurl", selectedImg);
       }
       const result = await axios.post(
-        `${serverUrl}/api/user/updateassistant`,
+        `/api/user/updateassistant`,
         formData,
         { withCredentials: true },
       );

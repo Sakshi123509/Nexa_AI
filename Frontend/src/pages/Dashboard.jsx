@@ -6,6 +6,8 @@ import { UserDataContext } from "../contextAPI/Usercontext";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 import "../css/dashboard.css"
+// import { serverUrl } from "../config.js";
+
 /* ── Voice settings helpers (same localStorage key as Home.jsx) ── */
 const STORAGE_KEY = "ai_voice_settings";
 
@@ -260,7 +262,7 @@ const Dashboard = () => {
   const fetchStats = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${serverUrl}/api/user/dashboardstats`, {
+      const res = await axios.get(`/api/user/dashboardstats`, {
         withCredentials: true,
       });
       setStats(res.data);

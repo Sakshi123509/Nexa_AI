@@ -10,7 +10,7 @@ import bg from "../assets/bgside.jpg";
 import chat from "../pages/chat.jsx";
 import Dashboard from "../pages/Dashboard";
 import axios from "axios";
-
+import { serverUrl } from "../config.js";
 // ─── Icons ───────────────────────────────────────────
 const Icons = {
   dashboard: (
@@ -208,7 +208,7 @@ export default function Navbar({ unreadCount = 0 }) {
   const handleLogout = async () => {
     try {
       window.speechSynthesis?.cancel();
-      await axios.get(`${serverUrl}/api/auth/logout`, {
+      await axios.get(`/api/auth/logout`, {
         withCredentials: true,
       });
     } catch (err) {

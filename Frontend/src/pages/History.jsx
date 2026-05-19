@@ -3,6 +3,7 @@ import { UserDataContext } from "../contextAPI/Usercontext";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 import img from "../assets/Gemini_Generated.png";
+// import { serverUrl } from "../config.js";
 
 function timeAgo(dateStr) {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -297,7 +298,7 @@ const History = () => {
     const load = async () => {
       try {
         setLoading(true);
-        const res = await axios.get(`${serverUrl}/api/user/history`, {
+        const res = await axios.get(`/api/user/history`, {
           withCredentials: true,
         });
         setHistory(res.data.history || []);

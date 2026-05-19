@@ -3,6 +3,7 @@ import { UserDataContext } from "../contextAPI/Usercontext";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 import img from "../assets/Gemini_Generated.png";
+// import { serverUrl } from "../config.js";
 
 function timestamp() {
   return new Date().toLocaleTimeString([], {
@@ -71,7 +72,7 @@ const Chat = () => {
   const saveToHistory = async (userMessage, aiResponse, type = "CHAT") => {
     try {
       await axios.post(
-        `${serverUrl}/api/user/savechat`,
+        `/api/user/savechat`,
         { userMessage, aiResponse, type },
         { withCredentials: true },
       );

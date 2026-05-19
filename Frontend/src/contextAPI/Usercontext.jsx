@@ -66,13 +66,13 @@
 // };
 
 // export default UserContext;
+
 import { useEffect, createContext, useState } from "react";
 import axios from "axios";
-
 export const UserDataContext = createContext();
 
 const UserContext = ({ children }) => {
-  const serverUrl = ""; // vite proxy handles this
+  const serverUrl = import.meta.env.VITE_API_URL; // vite proxy handles this
   const [frontendImage, setfrontendImage] = useState(null);
   const [backendImage, setbackendImage] = useState(null);
   const [selectedImg, setselectedImg] = useState(null);
@@ -82,7 +82,7 @@ const UserContext = ({ children }) => {
   const getGeminiResponse = async (command) => {
     try {
       const response = await axios.post(
-        `${serverUrl}/api/user/asktoassistant`,
+        `/api/user/asktoassistant`,
         { prompt: command },
         {
           withCredentials: true,
@@ -114,20 +114,7 @@ const UserContext = ({ children }) => {
       throw error;
     }
   };
-
   useEffect(() => {
-    const token = document.cookie.includes("token");
-
-    if (!token) {
-      // ✅ Cookie nahi — sab clear karo
-      localStorage.removeItem("userData");
-      setuserData(null);
-      setAuthLoaded(true);
-      return;
-    }
-
-    // ✅ Cookie hai — localStorage se mat lo, seedha API se lo
-    // (localStorage wali line hata do — yahi villain thi)
     handlecurrentuser()
       .catch(() => {
         setuserData(null);
@@ -135,6 +122,7 @@ const UserContext = ({ children }) => {
       })
       .finally(() => setAuthLoaded(true));
   }, []);
+
   useEffect(() => {
     if (userData) {
       localStorage.setItem("userData", JSON.stringify(userData));
@@ -156,7 +144,7 @@ const UserContext = ({ children }) => {
     setselectedImg,
     getGeminiResponse,
   };
-
+  console.log("SERVER URL:", serverUrl);
   return (
     <UserDataContext.Provider value={values}>
       {children}

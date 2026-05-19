@@ -7,6 +7,7 @@ import logo from "../assets/removed_logo.png";
 import imgage2 from "../assets/image2.jpg";
 import login_bg from "../assets/login_bg.jpg";
 
+
 const var_lime = "#39ff14";
 
 export default function Login() {
@@ -35,9 +36,10 @@ export default function Login() {
       view === "login" ? { email, password } : { name, email, password };
 
     try {
-      const res = await axios.post(`${serverUrl}${endpoint}`, payload, {
+      const res = await axios.post(`${endpoint}`, payload, {
         withCredentials: true,
       });
+      console.log(import.meta.env.REACT_APP_API_URL);
 
       localStorage.setItem(
         "nexa_user",
@@ -180,7 +182,7 @@ export default function Login() {
               <h1
                 className="nx-orbitron  nx-title"
                 style={{
-                  fontSize:"22px",
+                  fontSize: "22px",
                   letterSpacing: "2px",
                   color: "white",
                   margin: "0 0 5px 0",

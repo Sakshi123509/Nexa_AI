@@ -6,7 +6,7 @@ const isAuth = (req, res, next) => {
         if (!token) {
             return res.status(401).json({ message: "Token not found" });
         }
-
+        
         const verifyToken = jwt.verify(token, process.env.JWT_SECRET);
         if (!verifyToken?.userId) {
             return res.status(401).json({ message: "Invalid token payload" });
